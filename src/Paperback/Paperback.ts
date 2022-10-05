@@ -26,23 +26,23 @@ import {resetSettingsButton, serverSettingsMenu, testServerSettingsMenu,} from "
 
 import {
     getAuthorizationString,
-    getKomgaAPI,
+    getTachiAPI,
     getOptions,
     getServerUnavailableMangaTiles,
     searchRequest,
 } from "./Common";
 
-// This source use Komga REST API
-// https://komga.org/guides/rest.html
+// This source use Tachi REST API
+// https://tachiurl/api/swagger-u
 
 // Manga are represented by `series`
 // Chapters are represented by `books`
 
 // The Basic Authentication is handled by the interceptor
 
-// Code and method used by both the source and the tracker are defined in the duplicated `KomgaCommon.ts` file
+// Code and method used by both the source and the tracker are defined in the duplicated `TachiCommon.ts` file
 
-// Due to the self hosted nature of Komga, this source requires the user to enter its server credentials in the source settings menu
+// Due to the self hosted nature of Tachi, this source requires the user to enter its server credentials in the source settings menu
 // Some methods are known to throw errors without specific actions from the user. They try to prevent this behavior when server settings are not set.
 // This include:
 //  - homepage sections
@@ -50,17 +50,17 @@ import {
 //  - search method which is called even if the user search in an other source
 
 export const PaperbackInfo: SourceInfo = {
-    version: "1.2.8",
-    name: "Paperback",
+    version: "0.0.1",
+    name: "Tachidesk",
     icon: "icon.png",
-    author: "Lemon | Faizan Durrani",
-    authorWebsite: "https://github.com/FramboisePi",
-    description: "Komga client extension for Paperback",
+    author: "Alles",
+    authorWebsite: "https://github.com/AlexZorzi",
+    description: "Tachidesk extension",
     contentRating: ContentRating.EVERYONE,
-    websiteBaseURL: "https://komga.org",
+    websiteBaseURL: "https://owlynights.com",
     sourceTags: [
         {
-            text: "Self hosted",
+            text: "Tachiyomi Magic",
             type: TagType.RED,
         },
     ],
@@ -77,8 +77,8 @@ const SUPPORTED_IMAGE_TYPES = [
 // Number of items requested for paged requests
 const PAGE_SIZE = 40;
 
-export const parseMangaStatus = (komgaStatus: string): MangaStatus => {
-    switch (komgaStatus) {
+export const parseMangaStatus = (tachiStatus: string): MangaStatus => {
+    switch (tachiStatus) {
         case "ENDED":
             return MangaStatus.COMPLETED;
         case "ONGOING":
@@ -95,9 +95,9 @@ export const capitalize = (tag: string): string => {
     return tag.replace(/^\w/, (c) => c.toUpperCase());
 };
 
-export class KomgaRequestInterceptor implements RequestInterceptor {
+export class TachiRequestInterceptor implements RequestInterceptor {
     /*
-        Requests made to Komga must use a Basic Authentication.
+        Requests made to Tachi must use a Basic Authentication.
         This interceptor adds an authorization header to the requests.
 
         NOTE: The authorization header can be overridden by the request
@@ -138,7 +138,7 @@ export class Paperback extends Source {
     requestManager = createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 20000,
-        interceptor: new KomgaRequestInterceptor(this.stateManager),
+        interceptor: new TachiRequestInterceptor(this.stateManager),
     });
 
     override async getSourceMenu(): Promise<Section> {
@@ -155,7 +155,7 @@ export class Paperback extends Source {
 
     override async getTags(): Promise<TagSection[]> {
         // This function is called on the homepage and should not throw if the server is unavailable
-
+        return [];
         // We define four types of tags:
         // - `genre`
         // - `tag`
@@ -170,28 +170,28 @@ export class Paperback extends Source {
 
         // We try to make the requests. If this fail, we return a placeholder tags list to inform the user and prevent the function from throwing an error
         try {
-            const komgaAPI = await getKomgaAPI(this.stateManager);
+            const tachiAPI = await getTachiAPI(this.stateManager);
 
             const genresRequest = createRequestObject({
-                url: `${komgaAPI}/genres/`,
+                url: `${tachiAPI}/genres/`,
                 method: "GET",
             });
             genresResponse = await this.requestManager.schedule(genresRequest, 1);
 
             const tagsRequest = createRequestObject({
-                url: `${komgaAPI}/tags/series/`,
+                url: `${tachiAPI}/tags/series/`,
                 method: "GET",
             });
             tagsResponse = await this.requestManager.schedule(tagsRequest, 1);
 
             const collectionRequest = createRequestObject({
-                url: `${komgaAPI}/collections/`,
+                url: `${tachiAPI}/collections/`,
                 method: "GET",
             });
             collectionResponse = await this.requestManager.schedule(collectionRequest, 1);
 
             const libraryRequest = createRequestObject({
-                url: `${komgaAPI}/libraries/`,
+                url: `${tachiAPI}/libraries/`,
                 method: "GET",
             });
             libraryResponse = await this.requestManager.schedule(libraryRequest, 1);
@@ -254,12 +254,11 @@ export class Paperback extends Source {
 
     async getMangaDetails(mangaId: string): Promise<Manga> {
         /*
-                In Komga a manga is represented by a `serie`
+                In Tachi a manga is represented by a `serie`
                 */
-        const komgaAPI = await getKomgaAPI(this.stateManager);
-
+        const tachiAPI = await getTachiAPI(this.stateManager);
         const request = createRequestObject({
-            url: `${komgaAPI}/series/${mangaId}/`,
+            url: `${tachiAPI}/manga/${mangaId}/`,
             method: "GET",
         });
 
@@ -268,96 +267,81 @@ export class Paperback extends Source {
             typeof response.data === "string"
                 ? JSON.parse(response.data)
                 : response.data;
-
-        const metadata = result.metadata;
-        const booksMetadata = result.booksMetadata;
-
-        const tagSections: [TagSection, TagSection] = [
+        const tagSections: [TagSection] = [
             createTagSection({ id: "0", label: "genres", tags: [] }),
-            createTagSection({ id: "1", label: "tags", tags: [] }),
         ];
         // For each tag, we append a type identifier to its id and capitalize its label
-        tagSections[0].tags = metadata.genres.map((elem: string) =>
+        tagSections[0].tags = result.genre.map((elem: string) =>
             createTag({ id: "genre-" + elem, label: capitalize(elem) })
         );
-        tagSections[1].tags = metadata.tags.map((elem: string) =>
-            createTag({ id: "tag-" + elem, label: capitalize(elem) })
-        );
 
-        const authors: string[] = [];
-        const artists: string[] = [];
+        const authors: string[] = [result.author];
+        const artists: string[] = [result.artist];
 
-        // Additional roles: colorist, inker, letterer, cover, editor
-        for (const entry of booksMetadata.authors) {
-            if (entry.role === "writer") {
-                authors.push(entry.name);
-            }
-            if (entry.role === "penciller") {
-                artists.push(entry.name);
-            }
-        }
+        
 
         return createManga({
             id: mangaId,
-            titles: [metadata.title],
-            image: `${komgaAPI}/series/${mangaId}/thumbnail`,
-            status: parseMangaStatus(metadata.status),
-            langFlag: metadata.language,
+            titles: [result.title],
+            image: `${tachiAPI}/series/${mangaId}/thumbnail`,
+            status: parseMangaStatus(result.status),
+            // langFlag: metadata.language,
+            langFlag: "Todo",
             // Unused: langName
 
             artist: artists.join(", "),
             author: authors.join(", "),
 
-            desc: metadata.summary ? metadata.summary : booksMetadata.summary,
+            desc: result.description ? result.description : "No summary",
             tags: tagSections,
-            lastUpdate: metadata.lastModified,
+            // lastUpdate: result.lastModified,
+            lastUpdate: new Date(),
+
         });
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        /*
-                In Komga a chapter is a `book`
-                */
 
-        const komgaAPI = await getKomgaAPI(this.stateManager);
+        const tachiAPI = await getTachiAPI(this.stateManager);
 
-        const booksRequest = createRequestObject({
-            url: `${komgaAPI}/series/${mangaId}/books`,
-            param: "?unpaged=true&media_status=READY&deleted=false",
+        const chapterRequest = createRequestObject({
+            url: `${tachiAPI}/manga/${mangaId}/chapters`,
+            param: "",
             method: "GET",
         });
 
-        const booksResponse = await this.requestManager.schedule(booksRequest, 1);
-        const booksResult =
-            typeof booksResponse.data === "string"
-                ? JSON.parse(booksResponse.data)
-                : booksResponse.data;
+        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 1);
+        const chaptersResult =
+            typeof chaptersResponse.data === "string"
+                ? JSON.parse(chaptersResponse.data)
+                : chaptersResponse.data;
 
         const chapters: Chapter[] = [];
 
         // Chapters language is only available on the serie page
-        const serieRequest = createRequestObject({
-            url: `${komgaAPI}/series/${mangaId}/`,
-            method: "GET",
-        });
-        const serieResponse = await this.requestManager.schedule(serieRequest, 1);
-        const serieResult =
-            typeof serieResponse.data === "string"
-                ? JSON.parse(serieResponse.data)
-                : serieResponse.data;
-        const languageCode = parseLangCode(serieResult.metadata.language);
+        // const serieRequest = createRequestObject({
+        //     url: `${tachiAPI}/series/${mangaId}/`,
+        //     method: "GET",
+        // });
+        // const serieResponse = await this.requestManager.schedule(serieRequest, 1);
+        // const serieResult =
+        //     typeof serieResponse.data === "string"
+        //         ? JSON.parse(serieResponse.data)
+        //         : serieResponse.data;
+        const languageCode = parseLangCode("Todo");
 
-        for (const book of booksResult.content) {
+        for (const chapter of chaptersResult) {
+
             chapters.push(
                 createChapter({
-                    id: book.id,
+                    id: String(chapter.index),
                     mangaId: mangaId,
-                    chapNum: parseFloat(book.metadata.number),
+                    chapNum: parseFloat(chapter.chapterNumber),
                     langCode: languageCode,
-                    name: `${book.metadata.title} (${book.size})`,
-                    time: new Date(book.fileLastModified),
+                    name: `${chapter.title}`,
+                    time: new Date(chapter.uploadDate),
                     // @ts-ignore
-                    sortingIndex: book.metadata.numberSort
+                    sortingIndex: chapter.index
                 })
             );
         }
@@ -369,10 +353,11 @@ export class Paperback extends Source {
         mangaId: string,
         chapterId: string
     ): Promise<ChapterDetails> {
-        const komgaAPI = await getKomgaAPI(this.stateManager);
-
+        const tachiAPI = await getTachiAPI(this.stateManager);
+        console.log("chapter id:"+chapterId);
+        console.log("manga id:"+mangaId);
         const request = createRequestObject({
-            url: `${komgaAPI}/books/${chapterId}/pages`,
+            url: `${tachiAPI}/manga/${mangaId}/chapter/${chapterId}`,
             method: "GET",
         });
 
@@ -381,35 +366,37 @@ export class Paperback extends Source {
             typeof data.data === "string" ? JSON.parse(data.data) : data.data;
 
         const pages: string[] = [];
-        for (const page of result) {
-            if (SUPPORTED_IMAGE_TYPES.includes(page.mediaType)) {
-                pages.push(`${komgaAPI}/books/${chapterId}/pages/${page.number}`);
-            } else {
-                pages.push(
-                    `${komgaAPI}/books/${chapterId}/pages/${page.number}?convert=png`
-                );
-            }
+        for (const pageindex of Array(result.pageCount - 1).keys()) {
+            pages.push(`${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${pageindex}`);
+
+            // if (SUPPORTED_IMAGE_TYPES.includes(page.mediaType)) {
+            //     pages.push(`${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${page.number}`);
+            // } else {
+            //     pages.push(
+            //         `${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${page.number}?convert=png`
+            //     );
+            // }
         }
 
-        // Determine the preferred reading direction which is only available in the serie metadata
-        const serieRequest = createRequestObject({
-            url: `${komgaAPI}/series/${mangaId}/`,
-            method: "GET",
-        });
+        // Determine the preferred reading direction which is only available in the serie metadata TODO
+        // const serieRequest = createRequestObject({
+        //     url: `${tachiAPI}/series/${mangaId}/`,
+        //     method: "GET",
+        // });
 
-        const serieResponse = await this.requestManager.schedule(serieRequest, 1);
-        const serieResult =
-            typeof serieResponse.data === "string"
-                ? JSON.parse(serieResponse.data)
-                : serieResponse.data;
+        // const serieResponse = await this.requestManager.schedule(serieRequest, 1);
+        // const serieResult =
+        //     typeof serieResponse.data === "string"
+        //         ? JSON.parse(serieResponse.data)
+        //         : serieResponse.data;
 
+        // let longStrip = false;
+        // if (
+        //     ["VERTICAL", "WEBTOON"].includes(serieResult.metadata.readingDirection)
+        // ) {
+        //     longStrip = true;
+        // }
         let longStrip = false;
-        if (
-            ["VERTICAL", "WEBTOON"].includes(serieResult.metadata.readingDirection)
-        ) {
-            longStrip = true;
-        }
-
         return createChapterDetails({
             id: chapterId,
             longStrip: longStrip,
@@ -438,17 +425,20 @@ export class Paperback extends Source {
     ): Promise<void> {
         // This function is called on the homepage and should not throw if the server is unavailable
 
-        // We won't use `await this.getKomgaAPI()` as we do not want to throw an error on
+        // We won't use `await this.getTachiAPI()` as we do not want to throw an error on
         // the homepage when server settings are not set
-        const komgaAPI = await getKomgaAPI(this.stateManager);
+
+        // const tachiAPI = await getTachiAPI(this.stateManager);
+        const tachiAPI = null; // we do not ha a proper 'homepage' in tachidesk, could print default reading list in the future
+
         const { showOnDeck, showContinueReading } = await getOptions(this.stateManager);
 
 
-        if (komgaAPI === null) {
+        if (tachiAPI === null) {
             console.log("searchRequest failed because server settings are unset");
             const section = createHomeSection({
                 id: "unset",
-                title: "Go to source settings to set your Komga server credentials.",
+                title: "Go to source settings to set your Tachi server credentials.",
                 view_more: false,
                 items: getServerUnavailableMangaTiles(),
             });
@@ -495,20 +485,20 @@ export class Paperback extends Source {
             let apiPath: string, thumbPath: string, params: string, idProp: string;
             switch (section.id) {
                 case 'ondeck':
-                    apiPath = `${komgaAPI}/books/${section.id}`;
-                    thumbPath = `${komgaAPI}/books`;
+                    apiPath = `${tachiAPI}/books/${section.id}`;
+                    thumbPath = `${tachiAPI}/books`;
                     params = '?page=0&size=20&deleted=false';
                     idProp = 'seriesId';
                     break;
                 case 'continue':
-                    apiPath = `${komgaAPI}/books`;
-                    thumbPath = `${komgaAPI}/books`;
+                    apiPath = `${tachiAPI}/books`;
+                    thumbPath = `${tachiAPI}/books`;
                     params = '?sort=readProgress.readDate,desc&read_status=IN_PROGRESS&page=0&size=20&deleted=false';
                     idProp = 'seriesId';
                     break;
                 default:
-                    apiPath = `${komgaAPI}/series/${section.id}`;
-                    thumbPath = `${komgaAPI}/series`;
+                    apiPath = `${tachiAPI}/series/${section.id}`;
+                    thumbPath = `${tachiAPI}/series`;
                     params = '?page=0&size=20&deleted=false';
                     idProp = 'id';
                     break;
@@ -551,11 +541,11 @@ export class Paperback extends Source {
         homepageSectionId: string,
         metadata: any
     ): Promise<PagedResults> {
-        const komgaAPI = await getKomgaAPI(this.stateManager);
+        const tachiAPI = await getTachiAPI(this.stateManager);
         const page: number = metadata?.page ?? 0;
 
         const request = createRequestObject({
-            url: `${komgaAPI}/series/${homepageSectionId}`,
+            url: `${tachiAPI}/series/${homepageSectionId}`,
             param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
             method: "GET",
         });
@@ -570,7 +560,7 @@ export class Paperback extends Source {
                 createMangaTile({
                     id: serie.id,
                     title: createIconText({ text: serie.metadata.title }),
-                    image: `${komgaAPI}/series/${serie.id}/thumbnail`,
+                    image: `${tachiAPI}/series/${serie.id}/thumbnail`,
                 })
             );
         }
@@ -589,7 +579,7 @@ export class Paperback extends Source {
         time: Date,
         ids: string[]
     ): Promise<void> {
-        const komgaAPI = await getKomgaAPI(this.stateManager);
+        const tachiAPI = await getTachiAPI(this.stateManager);
 
         // We make requests of PAGE_SIZE titles to `series/updated/` until we got every titles
         // or we got a title which `lastModified` metadata is older than `time`
@@ -599,7 +589,7 @@ export class Paperback extends Source {
 
         while (loadMore) {
             const request = createRequestObject({
-                url: `${komgaAPI}/series/updated/`,
+                url: `${tachiAPI}/series/updated/`,
                 param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
                 method: "GET",
             });

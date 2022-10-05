@@ -7,7 +7,7 @@ import {
 import {
     retrieveStateData,
     setStateData,
-    getKomgaAPI,
+    getTachiAPI,
     getAuthorizationString,
 } from "./Common";
 
@@ -19,7 +19,7 @@ export const testServerSettings = async (
 ): Promise<string> => {
     // Try to establish a connection with the server. Return an human readable string containing the test result
 
-    const komgaAPI = await getKomgaAPI(stateManager)
+    const komgaAPI = await getTachiAPI(stateManager)
     const authorization = await getAuthorizationString(stateManager)
 
     // We check credentials are set in server settings
