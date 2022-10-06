@@ -275,7 +275,7 @@ export class TachiDesk extends Source {
             method: "GET",
         });
 
-        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 1);
+        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 2);
         const chaptersResult =
             typeof chaptersResponse.data === "string"
                 ? JSON.parse(chaptersResponse.data)
@@ -417,7 +417,7 @@ export class TachiDesk extends Source {
             sections.push({
                 section: createHomeSection({
                     id: `${source.id}-popular`,
-                    title: `${source.displayName} Popualr`,
+                    title: `${source.displayName} Popular`,
                     view_more: true,
                 }),
                 request: createRequestObject({
@@ -447,7 +447,6 @@ export class TachiDesk extends Source {
         const promises: Promise<void>[] = [];
 
         for (const section of sections) {
-            sectionCallback(section.section);
             promises.push(
                 this.requestManager.schedule(section.request, 1).then(response => {
                     let data: HomePageData
@@ -457,6 +456,7 @@ export class TachiDesk extends Source {
                     } catch (e) {
                         throw new Error(`${e}`)
                     }
+                    sectionCallback(section.section);
 
                     const tiles = [];
 

@@ -137,7 +137,8 @@ export async function searchRequest(
             tiles.push(
                 createMangaTile({
                     id: String(serie.id),
-                    title: createIconText({ text: serie.title+" "+source.displayName }),
+                    title: createIconText({ text: serie.title }),
+                    subtitleText: createIconText({text: source.displayName}),
                     image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
                 })
             );
