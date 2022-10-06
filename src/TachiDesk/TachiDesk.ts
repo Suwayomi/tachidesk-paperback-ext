@@ -447,7 +447,6 @@ export class TachiDesk extends Source {
         const promises: Promise<void>[] = [];
 
         for (const section of sections) {
-            sectionCallback(section.section);
             promises.push(
                 this.requestManager.schedule(section.request, 1).then(response => {
                     let data: HomePageData
@@ -457,6 +456,7 @@ export class TachiDesk extends Source {
                     } catch (e) {
                         throw new Error(`${e}`)
                     }
+                    sectionCallback(section.section);
 
                     const tiles = [];
 
