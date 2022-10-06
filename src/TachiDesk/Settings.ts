@@ -20,18 +20,18 @@ export const testServerSettings = async (
 ): Promise<string> => {
     // Try to establish a connection with the server. Return an human readable string containing the test result
 
-    const komgaAPI = await getTachiAPI(stateManager)
+    const tachiAPI = await getTachiAPI(stateManager)
     const authorization = await getAuthorizationString(stateManager)
 
     // We check credentials are set in server settings
-    if (komgaAPI === null || authorization === null) {
+    if (tachiAPI === null || authorization === null) {
         return "Impossible: Unset credentials in server settings";
     }
 
     // To test these information, we try to make a connection to the server
     // We could use a better endpoint to test the connection
     const request = createRequestObject({
-        url: `${komgaAPI}/libraries/`,
+        url: `${tachiAPI}/settings/about`,
         method: "GET",
         incognito: true, // We don't want the authorization to be cached
         headers: { authorization: authorization },
@@ -42,11 +42,13 @@ export const testServerSettings = async (
     try {
         const response = await requestManager.schedule(request, 1);
         responseStatus = response.status;
+        JSON.parse(response.data); // throws error if an non json is found
+
     } catch (error: any) {
         // If the server is unavailable error.message will be 'AsyncOperationTimedOutError'
         return `Failed: Could not connect to server - ${error.message}`;
     }
-
+    
     switch (responseStatus) {
         case 200: {
             return "Successful connection!";
@@ -75,20 +77,9 @@ export const serverSettingsMenu = (
             validate: async () => true,
             sections: async () => [
                 createSection({
-                    id: "information",
-                    header: undefined,
-                    rows: async () => [
-                        createMultilineLabel({
-                            label: "Demo Server",
-                            value: "Server URL: https://demo.komga.org\nUsername: demo@komga.org\nPassword: komga-demo\n\nNote: Values are case-sensitive.",
-                            id: "description",
-                        }),
-                    ],
-                }),
-                createSection({
                     id: "serverSettings",
                     header: "Server Settings",
-                    footer: "Minimal Komga version: v0.100.0",
+                    footer: "Tested on Tachidesk Server version: v0.6.5 r1125",
                     rows: async () => retrieveStateData(stateManager).then((values) => [
                         createInputField({
                             id: "serverAddress",
@@ -97,23 +88,23 @@ export const serverSettingsMenu = (
                             value: values.serverURL,
                             maskInput: false,
                         }),
-                        createInputField({
-                            id: "serverUsername",
-                            label: "Email",
-                            placeholder: "demo@komga.org",
-                            value: values.serverUsername,
-                            maskInput: false,
-                        }),
+                        // createInputField({
+                        //     id: "serverUsername",
+                        //     label: "Email",
+                        //     placeholder: "demo@komga.org",
+                        //     value: values.serverUsername,
+                        //     maskInput: false,
+                        // }),
                         // TS-Ignoring because this isnt documented yet
                         // Fallback to default input field if the app version doesnt support
                         // SecureInputField
                         // @ts-ignore
-                        (typeof createSecureInputField == 'undefined' ? createInputField : createSecureInputField)({
-                            id: "serverPassword",
-                            label: "Password",
-                            placeholder: "Some Super Secret Password",
-                            value: values.serverPassword
-                        }),
+                        // (typeof createSecureInputField == 'undefined' ? createInputField : createSecureInputField)({
+                        //     id: "serverPassword",
+                        //     label: "Password",
+                        //     placeholder: "Some Super Secret Password",
+                        //     value: values.serverPassword
+                        // }),
                     ]),
                 }),
                 createSection({
@@ -157,7 +148,7 @@ export const testServerSettingsMenu = (
             sections: async () => [
                 createSection({
                     id: "information",
-                    header: "Connection to Komga server:",
+                    header: "Connection to Tachidesk server:",
                     rows: () => testServerSettings(stateManager, requestManager).then(async (value) => [
                         createLabel({
                             label: value,
