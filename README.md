@@ -1,7 +1,7 @@
 # Tachidesk Paperback Extension [WIP]
 <img src="/src/TachiDesk/includes/icon.png" alt="drawing" width="200"/>
 
-With this  [Paperback](https://paperback.moe/) extension we can use Tachiyomi extensions on iOS!
+This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi extensions on iOS!
 [Tachidesk](https://github.com/Suwayomi/Tachidesk-Server) is a rewrite of [Tachiyomi](https://tachiyomi.org/) for the Desktop, this extensions queries a  Tachidesk instance to retrieve content.
 
 **This extension is work in progress and under heavy development, expect breakage!**
