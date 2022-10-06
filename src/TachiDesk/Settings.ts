@@ -1,5 +1,6 @@
 import {
     Button,
+    MangaTile,
     NavigationButton,
     RequestManager,
     SourceStateManager,
@@ -169,6 +170,137 @@ export const testServerSettingsMenu = (
         }),
     });
 };
+
+interface TDSource {
+    id:             string;
+    name:           string;
+    lang:           string;
+    iconUrl:        string;
+    supportsLatest: boolean;
+    isConfigurable: boolean;
+    isNsfw:         boolean;
+    displayName:    string;
+    default?:        boolean;
+}
+
+
+class SourceClass {
+    Sources: TDSource[] = []
+
+    constructor() {
+        this.Sources = this.Sources.sort((a, b) => a.displayName > b.displayName ? 1 : -1)
+    }
+
+    getIDList(): string[] {
+        return this.Sources.map(Sources => Sources.id)
+    }
+
+    getSelectedSources(sources: string[]): TDSource[] {
+        const FilteredSources: TDSource[] = []
+
+        for(const source of sources){
+            const fSources: TDSource[] = this.Sources.filter(MSources => MSources.id === source)
+
+            if(fSources && fSources[0]){
+                FilteredSources.push(fSources[0])
+            }
+        }
+
+        const SortedSources: TDSource[] = FilteredSources.sort((a, b) => a.displayName > b.displayName ? 1 : -1)
+
+        return SortedSources
+    }
+
+    getNameFromID(id: string): string {
+        return this.Sources.filter(Sources => Sources.id == id)[0]?.displayName ?? 'Unknown'
+    }
+
+    getDefault(): string[] {
+        return this.Sources.filter(Sources => Sources.default).map(Sources => Sources.id)
+    }
+
+}
+
+export const TDSources = new SourceClass
+
+export const getSourcesList = async (stateManager: SourceStateManager): Promise<string[]> => {
+    return (await stateManager.retrieve('tdsources') as string[]) ?? [
+        {
+            id: "0",
+            name: "Local source",
+            displayName: "Local source"
+          },
+    ]
+}
+
+
+export const getSources = async (stateManager: SourceStateManager) =>{
+    const tachiAPI = await getTachiAPI(stateManager);
+
+    const requestManager = createRequestManager({
+        requestsPerSecond: 4,
+        requestTimeout: 20000,
+    });
+
+    const request = createRequestObject({
+        url: `${tachiAPI}/source/list`,
+        method: "GET",
+    })
+    const response = await requestManager.schedule(request, 1)
+
+    let data: TDSource[]
+    try {
+        data = JSON.parse(response.data)
+    } catch (e) {
+        throw new Error(`${e}`)
+    }
+    if(data.length === 0) throw Error('Could not Find any sources avaliable in the api')    
+    
+    TDSources.Sources = data
+}
+export const TDSettings = (stateManager: SourceStateManager): NavigationButton => {
+    return createNavigationButton({
+        id: 'tdsource_settings',
+        value: '',
+        label: 'TachiDesk Source Settings',
+        form: createForm({
+            onSubmit: (values: any) => {
+                return Promise.all([
+                    stateManager.store('tdsources', values.tdsources),
+                ]).then()
+            },
+            validate: () => {
+                return Promise.resolve(true)
+            },
+            sections: () => {
+                return Promise.resolve([
+                    createSection({
+                        id: 'tachidesk_sources',
+                        footer: '',
+                        rows: () => {
+                            return Promise.all([
+                                getSourcesList(stateManager),
+                            ]).then(async values => {
+                                return [
+                                    createSelect({
+                                        id: 'tdsources',
+                                        label: 'Sources',
+                                        options: TDSources.getIDList(),
+                                        displayLabel: option => TDSources.getNameFromID(option),
+                                        value: values[0],
+                                        allowsMultiselect: true,
+                                        minimumOptionCount: 1,
+                                    })
+                                ]
+                            })
+                        }
+                    })
+                ])
+            }
+        })
+    })
+}
+
 
 export const resetSettingsButton = (
     stateManager: SourceStateManager
