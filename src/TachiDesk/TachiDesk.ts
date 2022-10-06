@@ -22,7 +22,7 @@ import {
 
 import {parseLangCode} from "./Languages";
 
-import {resetSettingsButton, serverSettingsMenu, testServerSettingsMenu,} from "./Settings";
+import {getSources, getSourcesList, resetSettingsButton, serverSettingsMenu, TDSettings, TDSources, testServerSettingsMenu,} from "./Settings";
 
 import {
     getAuthorizationString,
@@ -49,7 +49,7 @@ import {
 //  - getTags() which is called on the homepage
 //  - search method which is called even if the user search in an other source
 
-export const PaperbackInfo: SourceInfo = {
+export const TachiDeskInfo: SourceInfo = {
     version: "0.0.1",
     name: "Tachidesk",
     icon: "icon.png",
@@ -95,50 +95,13 @@ export const capitalize = (tag: string): string => {
     return tag.replace(/^\w/, (c) => c.toUpperCase());
 };
 
-export class TachiRequestInterceptor implements RequestInterceptor {
-    /*
-        Requests made to Tachi must use a Basic Authentication.
-        This interceptor adds an authorization header to the requests.
 
-        NOTE: The authorization header can be overridden by the request
-        */
-
-    stateManager: SourceStateManager;
-    constructor(stateManager: SourceStateManager) {
-        this.stateManager = stateManager;
-    }
-
-    async interceptResponse(response: Response): Promise<Response> {
-        return response;
-    }
-
-    async interceptRequest(request: Request): Promise<Request> {
-        if (request.headers === undefined) {
-            request.headers = {};
-        }
-
-        // We mustn't call this.getAuthorizationString() for the stateful submission request.
-        // This procedure indeed catchs the request used to check user credentials
-        // which can happen before an authorizationString is saved,
-        // raising an error in getAuthorizationString when we check for its existence
-        // Thus we only inject an authorizationString if none are defined in the request
-        if (request.headers.authorization === undefined) {
-            request.headers.authorization = await getAuthorizationString(
-                this.stateManager
-            );
-        }
-
-        return request;
-    }
-}
-
-export class Paperback extends Source {
+export class TachiDesk extends Source {
     stateManager = createSourceStateManager({});
 
     requestManager = createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 20000,
-        interceptor: new TachiRequestInterceptor(this.stateManager),
     });
 
     override async getSourceMenu(): Promise<Section> {
@@ -149,6 +112,7 @@ export class Paperback extends Source {
                 serverSettingsMenu(this.stateManager),
                 testServerSettingsMenu(this.stateManager, this.requestManager),
                 resetSettingsButton(this.stateManager),
+                TDSettings(this.stateManager)
             ],
         });
     }
@@ -256,6 +220,7 @@ export class Paperback extends Source {
         /*
                 In Tachi a manga is represented by a `serie`
                 */
+    
         const tachiAPI = await getTachiAPI(this.stateManager);
         const request = createRequestObject({
             url: `${tachiAPI}/manga/${mangaId}/`,
@@ -424,16 +389,14 @@ export class Paperback extends Source {
         sectionCallback: (section: HomeSection) => void
     ): Promise<void> {
         // This function is called on the homepage and should not throw if the server is unavailable
-
+        getSources(this.stateManager)
         // We won't use `await this.getTachiAPI()` as we do not want to throw an error on
         // the homepage when server settings are not set
 
-        // const tachiAPI = await getTachiAPI(this.stateManager);
-        const tachiAPI = null; // we do not ha a proper 'homepage' in tachidesk, could print default reading list in the future
-
-        const { showOnDeck, showContinueReading } = await getOptions(this.stateManager);
-
-
+        const tachiAPI = await getTachiAPI(this.stateManager);
+        const SourcesList = await getSourcesList(this.stateManager)
+        const SelectedSources = TDSources.getSelectedSources(SourcesList)
+        
         if (tachiAPI === null) {
             console.log("searchRequest failed because server settings are unset");
             const section = createHomeSection({
@@ -449,88 +412,68 @@ export class Paperback extends Source {
         // The source define two homepage sections: new and latest
         const sections = [];
 
-        if (showOnDeck) {
-            sections.push(createHomeSection({
-                id: 'ondeck',
-                title: 'On Deck',
-                view_more: false,
-            }));
+
+        for(const source of SelectedSources){
+            sections.push({
+                section: createHomeSection({
+                    id: `${source.id}-popular`,
+                    title: `${source.displayName} Popualr`,
+                    view_more: true,
+                }),
+                request: createRequestObject({
+                    url: encodeURI(`${tachiAPI}/source/${source.id}/popular/1`),
+                    method: 'GET',
+                }),
+                subtitle: source.displayName
+            })
+
+            if(source.supportsLatest){
+                sections.push({
+                    section: createHomeSection({
+                        id: `${source.id}-latest`,
+                        title: `${source.displayName} Latest`,
+                        view_more: true,
+                    }),
+                    request: createRequestObject({
+                        url: encodeURI(`${tachiAPI}/source/${source.id}/latest/1`),
+                        method: 'GET',
+                    }),
+                    subtitle: source.displayName
+                })
+            }
         }
 
-        if (showContinueReading) {
-            sections.push(createHomeSection({
-                id: 'continue',
-                title: 'Continue Reading',
-                view_more: false,
-            }));
-        }
 
-        sections.push(createHomeSection({
-            id: 'new',
-            title: 'Recently added series',
-            //type: showRecentFeatured ? HomeSectionType.featured : HomeSectionType.singleRowNormal,
-            view_more: true,
-        }));
-        sections.push(createHomeSection({
-            id: 'updated',
-            title: 'Recently updated series',
-            view_more: true,
-        }));
         const promises: Promise<void>[] = [];
 
         for (const section of sections) {
-            // Let the app load empty tagSections
-            sectionCallback(section);
-
-            let apiPath: string, thumbPath: string, params: string, idProp: string;
-            switch (section.id) {
-                case 'ondeck':
-                    apiPath = `${tachiAPI}/books/${section.id}`;
-                    thumbPath = `${tachiAPI}/books`;
-                    params = '?page=0&size=20&deleted=false';
-                    idProp = 'seriesId';
-                    break;
-                case 'continue':
-                    apiPath = `${tachiAPI}/books`;
-                    thumbPath = `${tachiAPI}/books`;
-                    params = '?sort=readProgress.readDate,desc&read_status=IN_PROGRESS&page=0&size=20&deleted=false';
-                    idProp = 'seriesId';
-                    break;
-                default:
-                    apiPath = `${tachiAPI}/series/${section.id}`;
-                    thumbPath = `${tachiAPI}/series`;
-                    params = '?page=0&size=20&deleted=false';
-                    idProp = 'id';
-                    break;
-            }
-
-            const request = createRequestObject({
-                url: apiPath,
-                param: params,
-                method: "GET",
-            });
-
-            // Get the section data
+            sectionCallback(section.section);
             promises.push(
-                this.requestManager.schedule(request, 1).then((data) => {
-                    const result =
-                        typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+                this.requestManager.schedule(section.request, 1).then(response => {
+                    let data: HomePageData
+
+                    try {
+                        data = JSON.parse(response.data)
+                    } catch (e) {
+                        throw new Error(`${e}`)
+                    }
 
                     const tiles = [];
 
-                    for (const serie of result.content) {
+                    for (const serie of data.mangaList) {
                         tiles.push(
                             createMangaTile({
-                                id: serie[idProp],
-                                title: createIconText({ text: serie.metadata.title }),
-                                image: `${thumbPath}/${serie.id}/thumbnail`,
+                                id: serie.id.toString(),
+                                title: createIconText({ text: serie.title }),
+                                image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
+                                subtitleText: createIconText({ text: section.subtitle })
                             })
                         );
                     }
-                    section.items = tiles;
-                    sectionCallback(section);
-                })
-            );
+                    section.section.items = tiles
+                    sectionCallback(section.section)
+                }),
+            )
         }
 
         // Make sure the function completes
@@ -627,4 +570,15 @@ export class Paperback extends Source {
             }
         }
     }
+}
+
+
+export interface HomePageData {
+    mangaList: 
+    [
+        {
+            id: string
+            title: string
+        }
+    ];
 }

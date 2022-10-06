@@ -3,7 +3,8 @@ import {
     PagedResults,
     SourceStateManager,
     RequestManager,
-    Response
+    Response,
+    MangaTile
 } from "paperback-extensions-common";
 
 export function getServerUnavailableMangaTiles() {
@@ -161,7 +162,7 @@ export async function searchRequest(
 // TACHI API STATE METHODS
 //
 
-const DEFAULT_TACHI_SERVER_ADDRESS = 'http://192.168.1.116:4567'
+const DEFAULT_TACHI_SERVER_ADDRESS = 'http://10.0.0.127:4567'
 const DEFAULT_TACHI_API = DEFAULT_TACHI_SERVER_ADDRESS + '/api/v1'
 const DEFAULT_TACHI_LANG = "en"
 const DEFAULT_TACHI_USERNAME = ''
@@ -241,4 +242,37 @@ function createAuthorizationString(username: string, password: string): string {
 
 function createtachiAPI(serverAddress: string): string {
     return serverAddress + (serverAddress.slice(-1) === '/' ? 'api/v1' : '/api/v1')
+}
+
+export interface HomePageData {
+    mangaList: 
+    [
+        {
+            id: number
+            title: string
+        }
+    ];
+}
+
+export const parseHomePage = (data: HomePageData, tachiAPI: string, displayName: string): MangaTile[] => {
+    const results: MangaTile[] = []
+
+    for (const manga of data.mangaList) {
+        const id = manga.id.toString()
+        const title = manga.title
+        const image = `${tachiAPI}/manga/${manga.id}/thumbnail`
+        const subtitle = displayName
+
+        if (!id) continue
+
+        results.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle })
+        }))
+
+    }
+
+    return results
 }
