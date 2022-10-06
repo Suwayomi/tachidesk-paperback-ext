@@ -20,8 +20,8 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 3) You can message me on [Telegram](https://t.me/Alz_8bit) 
 
 ##### Credits
-- @xOnlyFadi for the active help on this repo
-- @TheNetsky for the technical help
+- [xOnlyFadi](https://github.com/xOnlyFadi) for the active help on this repo
+- [TheNetsky](https://github.com/TheNetsky) for the technical help
 - Paperback Team for the awesome platform
 - Tachidesk Team for the fantastic API
 - Tachiyomi Team and Community for the content sources
