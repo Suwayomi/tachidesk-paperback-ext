@@ -302,8 +302,8 @@ export class TachiDesk extends Source {
                     id: String(chapter.index),
                     mangaId: mangaId,
                     chapNum: parseFloat(chapter.chapterNumber),
-                    langCode: languageCode,
-                    name: `${chapter.title}`,
+                    //langCode: languageCode,
+                    name: `${chapter.name}`,
                     time: new Date(chapter.uploadDate),
                     // @ts-ignore
                     sortingIndex: chapter.index
