@@ -1,20 +1,27 @@
-# Paperback Sources
-## About Sources
-Sources were a highly requested feature for Paperback as it allows users to read manga that are otherwise not on MangaDex (The default source of the app). The sources are community-driven, and may be updated and changed without requiring an application update. This allows for a rolling development process, implementing changes as they come in, rather than waiting for the application developer to implement new sources and bugfixes. 
+# Tachidesk Paperback Extension [WIP]
+<img src="/src/TachiDesk/includes/icon.png" alt="drawing" width="200"/>
 
-## Developing A Source
-### Source Architecture
-The two main driving points why the architecture was developed in such a way is to ensure abstraction and a separation of concerns. The extensions do not have direct access to any http libraries. This is to ensure that the developer cannot access/do more than is required. 
-The main driving application architecture is a factory -- it is not aware of any functions other than the ones that are designated are required or optional. The application treats the Source.ts abstract class as a Factory design pattern entry point. The application is able to spawn and run as many sources as it needs to, as long as it's able to instantiate a child of Source.ts. This allows the application to handle all of the unique URLs and HTTP parsing which each source requires, on an individual basis.
+With this  [Paperback](https://paperback.moe/) extension we can use Tachiyomi extensions on iOS!
+[Tachidesk](https://github.com/Suwayomi/Tachidesk-Server) is a rewrite of [Tachiyomi](https://tachiyomi.org/) for the Desktop, this extensions queries a  Tachidesk instance to retrieve content.
 
-![Application Diagram](https://cdn.discordapp.com/attachments/267036594853249041/723990710247882752/Blank_Diagram.png)
+**This extension is work in progress and under heavy development, expect breakage!**
 
-Many of the functions have two parts that are required to be implemented -- the request and the formatting. The request functions are there to give back a properly formatted request. The other part of the function takes the data from the completed request and formats the data to fit the models defined by the function signature. 
-The following sequence diagram shows how the data flows between the application and source. 
+## Setup
+-   Setup a Tachidesk server by following this [guide](https://github.com/Suwayomi/Tachidesk-Server#downloading-and-running-the-app).
+- Make sure the instance is available through the browser by connecting to the server ip:port (usually runs on port 4567)
+- Head to Tachidesk extensions page and install your favorite extensions.
+- Now install the this extension on your iOS device by clicking [here](https://alexzorzi.github.io/Tachidesk-Paperback-ext/)
+- On Paperback head to Tachidesk extension settings and set the server ip:port (ex: http://192.168.1.10:4567)
+- All set! you can now enjoy Tachiyomi extensions on iOS
 
-![Sequence Diagram](https://cdn.discordapp.com/attachments/267036594853249041/723994905059262484/Blank_Diagram_-_Page_2_1.png)
+### How to report a Bug
+1) Open an Issue [here](https://github.com/AlexZorzi/tachidesk-paperback-ext/issues/new) on Github, describe in details the error and how to reproduce it and attach a log exported from paperback (preferred way).
+2) You can message me on Discord at Alles#8932
+3) You can message me on [Telegram](https://t.me/Alz_8bit) 
 
-### Updating A Source
-Updating a source is simple. You just need to change the version number every time you change the code in any way. 
-
-### Source Documentation 
+##### Credits
+- @xOnlyFadi for the active help on this repo
+- @TheNetsky for the technical help
+- Paperback Team for the awesome platform
+- Tachidesk Team for the fantastic API
+- Tachiyomi Team and Community for the content sources
