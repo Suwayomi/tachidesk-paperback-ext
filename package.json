@@ -1,6 +1,7 @@
 {
   "name": "extensions-main",
   "version": "1.0.0",
+  "repositoryName": "Tachidesk Extension",
   "description": "The default source for Paperback, MangaDex",
   "main": "index.js",
   "scripts": {
@@ -11,7 +12,7 @@
     "bundle": "paperback bundle",
     "serve": "paperback serve"
   },
-  "author": "Faizan Durrani",
+  "author": "Alex Zorzi",
   "license": "ISC",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.11.0",
