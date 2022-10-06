@@ -275,7 +275,7 @@ export class TachiDesk extends Source {
             method: "GET",
         });
 
-        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 1);
+        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 2);
         const chaptersResult =
             typeof chaptersResponse.data === "string"
                 ? JSON.parse(chaptersResponse.data)
