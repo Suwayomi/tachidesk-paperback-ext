@@ -417,7 +417,7 @@ export class TachiDesk extends Source {
             sections.push({
                 section: createHomeSection({
                     id: `${source.id}-popular`,
-                    title: `${source.displayName} Popualr`,
+                    title: `${source.displayName} Popular`,
                     view_more: true,
                 }),
                 request: createRequestObject({
