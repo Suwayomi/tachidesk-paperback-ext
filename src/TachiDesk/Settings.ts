@@ -255,6 +255,11 @@ export const resetSettingsButton = (
         id: "reset",
         label: "Reset to Default",
         value: "",
-        onTap: () => setStateData(stateManager, {}),
+        onTap: async () => {
+            await Promise.all([
+                await setStateData(stateManager, {}),
+                await stateManager.store('tdsources', null),
+            ])
+        }
     });
 };

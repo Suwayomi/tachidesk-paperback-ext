@@ -37,17 +37,12 @@ export async function setStateData(stateManager: SourceStateManager, data: Recor
         stateManager,
         data['serverAddress'] ?? DEFAULT_TACHI_SERVER_ADDRESS
     )
-    await makeSourcesNull(stateManager)
 }
 
 async function setTachiServerAddress(stateManager: SourceStateManager, apiUri: string) {
     await stateManager.store('serverAddress', apiUri)
     await stateManager.store('tachiAPI', createtachiAPI(apiUri))
     
-}
-
-async function makeSourcesNull(stateManager: SourceStateManager){
-    await stateManager.store('tdsources', null)
 }
 
 function createtachiAPI(serverAddress: string): string {
