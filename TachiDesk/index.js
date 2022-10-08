@@ -393,15 +393,11 @@ async function retrieveStateData(stateManager) {
 exports.retrieveStateData = retrieveStateData;
 async function setStateData(stateManager, data) {
     await setTachiServerAddress(stateManager, data['serverAddress'] ?? DEFAULT_TACHI_SERVER_ADDRESS);
-    await makeSourcesNull(stateManager);
 }
 exports.setStateData = setStateData;
 async function setTachiServerAddress(stateManager, apiUri) {
     await stateManager.store('serverAddress', apiUri);
     await stateManager.store('tachiAPI', createtachiAPI(apiUri));
-}
-async function makeSourcesNull(stateManager) {
-    await stateManager.store('tdsources', null);
 }
 function createtachiAPI(serverAddress) {
     return serverAddress + (serverAddress.slice(-1) === '/' ? 'api/v1' : '/api/v1');
@@ -610,7 +606,12 @@ const resetSettingsButton = (stateManager) => {
         id: "reset",
         label: "Reset to Default",
         value: "",
-        onTap: () => (0, Common_1.setStateData)(stateManager, {}),
+        onTap: async () => {
+            await Promise.all([
+                await (0, Common_1.setStateData)(stateManager, {}),
+                await stateManager.store('tdsources', null),
+            ]);
+        }
     });
 };
 exports.resetSettingsButton = resetSettingsButton;
