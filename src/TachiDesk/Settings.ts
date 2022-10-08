@@ -1,6 +1,5 @@
 import {
     Button,
-    MangaTile,
     NavigationButton,
     RequestManager,
     SourceStateManager,
@@ -204,6 +203,7 @@ export const getSources = async (stateManager: SourceStateManager) =>{
     
     TDSources.Sources = data
 }
+
 export const TDSettings = (stateManager: SourceStateManager): NavigationButton => {
     return createNavigationButton({
         id: 'tdsource_settings',

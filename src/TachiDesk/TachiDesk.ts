@@ -6,7 +6,6 @@ import {
     Manga,
     MangaStatus,
     MangaTile,
-    MangaUpdates,
     PagedResults,
     Response,
     SearchRequest,
@@ -184,7 +183,7 @@ export class TachiDesk extends Source {
 
         const chapters: Chapter[] = [];
 
-        const languageCode = parseLangCode("Todo");
+        //const languageCode = parseLangCode("Todo");
 
         for (const chapter of chaptersResult) {
 
