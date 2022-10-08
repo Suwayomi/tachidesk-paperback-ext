@@ -17,7 +17,7 @@ export function getServerUnavailableMangaTiles() {
 // TACHI API STATE METHODS
 //
 
-const DEFAULT_TACHI_SERVER_ADDRESS = 'http://10.0.0.127:4567'
+const DEFAULT_TACHI_SERVER_ADDRESS = 'http://127.0.0.1:4567'
 const DEFAULT_TACHI_API = DEFAULT_TACHI_SERVER_ADDRESS + '/api/v1'
 
 export async function getTachiAPI(stateManager: SourceStateManager): Promise<string> {
