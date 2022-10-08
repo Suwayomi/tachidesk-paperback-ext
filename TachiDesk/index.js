@@ -2386,7 +2386,7 @@ __exportStar(require("./SearchFilter"), exports);
 (function (Buffer){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseHomePage = exports.setStateData = exports.retrieveStateData = exports.getOptions = exports.getTachiAPI = exports.getAuthorizationString = exports.searchRequest = exports.getServerUnavailableMangaTiles = void 0;
+exports.setStateData = exports.retrieveStateData = exports.getOptions = exports.getTachiAPI = exports.getAuthorizationString = exports.getServerUnavailableMangaTiles = void 0;
 function getServerUnavailableMangaTiles() {
     // This tile is used as a placeholder when the server is unavailable
     return [
@@ -2399,125 +2399,11 @@ function getServerUnavailableMangaTiles() {
     ];
 }
 exports.getServerUnavailableMangaTiles = getServerUnavailableMangaTiles;
-async function searchRequest(searchQuery, metadata, requestManager, stateManager, page_size) {
-    // This function is also called when the user search in an other source. It should not throw if the server is unavailable.
-    // We won't use `await this.getTachiAPI()` as we do not want to throw an error
-    const tachiAPI = await getTachiAPI(stateManager);
-    const { orderResultsAlphabetically } = await getOptions(stateManager);
-    if (tachiAPI === null) {
-        console.log("searchRequest failed because server settings are unset");
-        return createPagedResults({
-            results: getServerUnavailableMangaTiles(),
-        });
-    }
-    const page = metadata?.page ?? 0;
-    const paramsList = [`pageNum=${page}`]; // , `size=${page_size}`]
-    if (searchQuery.title !== undefined && searchQuery.title !== "") {
-        paramsList.push("searchTerm=" + encodeURIComponent(searchQuery.title));
-    }
-    if (searchQuery.includedTags !== undefined) {
-        searchQuery.includedTags.forEach((tag) => {
-            // There are two types of tags: `tag` and `genre`
-            if (tag.id.substr(0, 4) == "tag-") {
-                paramsList.push("tag=" + encodeURIComponent(tag.id.substring(4)));
-            }
-            if (tag.id.substr(0, 6) == "genre-") {
-                paramsList.push("genre=" + encodeURIComponent(tag.id.substring(6)));
-            }
-            if (tag.id.substr(0, 11) == "collection-") {
-                paramsList.push("collection_id=" + encodeURIComponent(tag.id.substring(11)));
-            }
-            if (tag.id.substr(0, 8) == "library-") {
-                paramsList.push("library_id=" + encodeURIComponent(tag.id.substring(8)));
-            }
-        });
-    }
-    // if (orderResultsAlphabetically) {
-    //     paramsList.push("sort=titleSort");
-    // } else {
-    //     paramsList.push("sort=lastModified,desc");
-    // }
-    let paramsString = "";
-    if (paramsList.length > 0) {
-        paramsString = "?" + paramsList.join("&");
-    }
-    const requestSource = createRequestObject({
-        // get all Sourceensions 
-        url: `${tachiAPI}/source/list`,
-        method: "GET",
-        param: paramsString,
-    });
-    let dataSource;
-    try {
-        dataSource = await requestManager.schedule(requestSource, 1);
-    }
-    catch (error) {
-        console.log(`searchRequest failed with error: ${error}`);
-        return createPagedResults({
-            results: getServerUnavailableMangaTiles(),
-        });
-    }
-    const resultSource = typeof dataSource.data === "string" ? JSON.parse(dataSource.data) : dataSource.data;
-    const tiles = [];
-    for (const source of resultSource) {
-        if (source.lang != DEFAULT_TACHI_LANG) {
-            continue;
-        }
-        const request = createRequestObject({
-            // 4215511432986138970 test id
-            url: `${tachiAPI}/source/${source.id}/search`,
-            method: "GET",
-            param: paramsString,
-        });
-        // We don't want to throw if the server is unavailable
-        let data;
-        try {
-            data = await requestManager.schedule(request, 1);
-            if (data.status != 200) {
-                continue;
-            }
-        }
-        catch (error) {
-            console.log(`searchRequest failed with error: ${error}`);
-            return createPagedResults({
-                results: getServerUnavailableMangaTiles(),
-            });
-        }
-        // return createPagedResults({
-        //     results: [
-        //         createMangaTile({
-        //             id: "Tachidesk",
-        //             title: createIconText({ text: "Tachidesk" }),
-        //             image: "",
-        //             subtitleText: createIconText({ text: data.request.url }),
-        //         }),
-        //     ],
-        // });
-        // throw new Error(data.data);
-        const result = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-        for (const serie of result.mangaList) {
-            tiles.push(createMangaTile({
-                id: String(serie.id),
-                title: createIconText({ text: serie.title }),
-                subtitleText: createIconText({ text: source.displayName }),
-                image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
-            }));
-        }
-    }
-    // If no series were returned we are on the last page
-    metadata = tiles.length === 0 ? undefined : { page: page + 1 };
-    return createPagedResults({
-        results: tiles,
-        metadata,
-    });
-}
-exports.searchRequest = searchRequest;
 // 
 // TACHI API STATE METHODS
 //
 const DEFAULT_TACHI_SERVER_ADDRESS = 'http://10.0.0.127:4567';
 const DEFAULT_TACHI_API = DEFAULT_TACHI_SERVER_ADDRESS + '/api/v1';
-const DEFAULT_TACHI_LANG = "en";
 const DEFAULT_TACHI_USERNAME = '';
 const DEFAULT_TACHI_PASSWORD = '';
 const DEFAULT_SHOW_ON_DECK = false;
@@ -2576,25 +2462,6 @@ function createAuthorizationString(username, password) {
 function createtachiAPI(serverAddress) {
     return serverAddress + (serverAddress.slice(-1) === '/' ? 'api/v1' : '/api/v1');
 }
-const parseHomePage = (data, tachiAPI, displayName) => {
-    const results = [];
-    for (const manga of data.mangaList) {
-        const id = manga.id.toString();
-        const title = manga.title;
-        const image = `${tachiAPI}/manga/${manga.id}/thumbnail`;
-        const subtitle = displayName;
-        if (!id)
-            continue;
-        results.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle })
-        }));
-    }
-    return results;
-};
-exports.parseHomePage = parseHomePage;
 
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"buffer":2}],52:[function(require,module,exports){
@@ -2935,7 +2802,7 @@ exports.TachiDeskInfo = {
     authorWebsite: "https://github.com/AlexZorzi",
     description: "Tachidesk extension",
     contentRating: paperback_extensions_common_1.ContentRating.EVERYONE,
-    websiteBaseURL: "https://owlynights.com",
+    websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     sourceTags: [
         {
             text: "Tachiyomi Magic",
@@ -2943,15 +2810,6 @@ exports.TachiDeskInfo = {
         },
     ],
 };
-const SUPPORTED_IMAGE_TYPES = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    "application/pdf",
-];
-// Number of items requested for paged requests
-const PAGE_SIZE = 40;
 const parseMangaStatus = (tachiStatus) => {
     switch (tachiStatus) {
         case "ENDED":
@@ -2978,6 +2836,59 @@ class TachiDesk extends paperback_extensions_common_1.Source {
             requestsPerSecond: 4,
             requestTimeout: 20000,
         });
+        /*override async filterUpdatedManga(
+            mangaUpdatesFoundCallback: (updates: MangaUpdates) => void,
+            time: Date,
+            ids: string[]
+        ): Promise<void> {
+            const tachiAPI = await getTachiAPI(this.stateManager);
+    
+            // We make requests of PAGE_SIZE titles to `series/updated/` until we got every titles
+            // or we got a title which `lastModified` metadata is older than `time`
+            let page = 0;
+            const foundIds: string[] = [];
+            let loadMore = true;
+    
+            while (loadMore) {
+                const request = createRequestObject({
+                    url: `${tachiAPI}/series/updated/`,
+                    param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
+                    method: "GET",
+                });
+    
+                const data = await this.requestManager.schedule(request, 1);
+                const result =
+                    typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+    
+                for (const serie of result.content) {
+                    const serieUpdated = new Date(serie.metadata.lastModified);
+    
+                    if (serieUpdated >= time) {
+                        if (ids.includes(serie)) {
+                            foundIds.push(serie);
+                        }
+                    } else {
+                        loadMore = false;
+                        break;
+                    }
+                }
+    
+                // If no series were returned we are on the last page
+                if (result.content.length === 0) {
+                    loadMore = false;
+                }
+    
+                page = page + 1;
+    
+                if (foundIds.length > 0) {
+                    mangaUpdatesFoundCallback(
+                        createMangaUpdates({
+                            ids: foundIds,
+                        })
+                    );
+                }
+            }
+        }*/
     }
     async getSourceMenu() {
         return createSection({
@@ -2991,79 +2902,7 @@ class TachiDesk extends paperback_extensions_common_1.Source {
             ],
         });
     }
-    async getTags() {
-        // This function is called on the homepage and should not throw if the server is unavailable
-        return [];
-        // We define four types of tags:
-        // - `genre`
-        // - `tag`
-        // - `collection`
-        // - `library`
-        // To be able to make the difference between theses types, we append `genre-` or `tag-` at the beginning of the tag id
-        let genresResponse, tagsResponse, collectionResponse, libraryResponse;
-        // We try to make the requests. If this fail, we return a placeholder tags list to inform the user and prevent the function from throwing an error
-        try {
-            const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-            const genresRequest = createRequestObject({
-                url: `${tachiAPI}/genres/`,
-                method: "GET",
-            });
-            genresResponse = await this.requestManager.schedule(genresRequest, 1);
-            const tagsRequest = createRequestObject({
-                url: `${tachiAPI}/tags/series/`,
-                method: "GET",
-            });
-            tagsResponse = await this.requestManager.schedule(tagsRequest, 1);
-            const collectionRequest = createRequestObject({
-                url: `${tachiAPI}/collections/`,
-                method: "GET",
-            });
-            collectionResponse = await this.requestManager.schedule(collectionRequest, 1);
-            const libraryRequest = createRequestObject({
-                url: `${tachiAPI}/libraries/`,
-                method: "GET",
-            });
-            libraryResponse = await this.requestManager.schedule(libraryRequest, 1);
-        }
-        catch (error) {
-            console.log(`getTags failed with error: ${error}`);
-            return [
-                createTagSection({ id: "-1", label: "Server unavailable", tags: [] }),
-            ];
-        }
-        // The following part of the function should throw if there is an error and thus is not in the try/catch block
-        const genresResult = typeof genresResponse.data === "string"
-            ? JSON.parse(genresResponse.data)
-            : genresResponse.data;
-        const tagsResult = typeof tagsResponse.data === "string"
-            ? JSON.parse(tagsResponse.data)
-            : tagsResponse.data;
-        const collectionResult = typeof collectionResponse.data === "string"
-            ? JSON.parse(collectionResponse.data)
-            : collectionResponse.data;
-        const libraryResult = typeof libraryResponse.data === "string"
-            ? JSON.parse(libraryResponse.data)
-            : libraryResponse.data;
-        const tagSections = [
-            createTagSection({ id: "0", label: "genres", tags: [] }),
-            createTagSection({ id: "1", label: "tags", tags: [] }),
-            createTagSection({ id: "2", label: "collections", tags: [] }),
-            createTagSection({ id: "3", label: "libraries", tags: [] }),
-        ];
-        // For each tag, we append a type identifier to its id and capitalize its label
-        tagSections[0].tags = genresResult.map((elem) => createTag({ id: "genre-" + elem, label: (0, exports.capitalize)(elem) }));
-        tagSections[1].tags = tagsResult.map((elem) => createTag({ id: "tag-" + elem, label: (0, exports.capitalize)(elem) }));
-        tagSections[2].tags = collectionResult.content.map((elem) => createTag({ id: "collection-" + elem.id, label: (0, exports.capitalize)(elem.name) }));
-        tagSections[3].tags = libraryResult.map((elem) => createTag({ id: "library-" + elem.id, label: (0, exports.capitalize)(elem.name) }));
-        if (collectionResult.content.length <= 1) {
-            tagSections.splice(2, 1);
-        }
-        return tagSections;
-    }
     async getMangaDetails(mangaId) {
-        /*
-                In Tachi a manga is represented by a `serie`
-                */
         const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
         const request = createRequestObject({
             url: `${tachiAPI}/manga/${mangaId}/`,
@@ -3083,7 +2922,7 @@ class TachiDesk extends paperback_extensions_common_1.Source {
         return createManga({
             id: mangaId,
             titles: [result.title],
-            image: `${tachiAPI}/series/${mangaId}/thumbnail`,
+            image: `${tachiAPI}/manga/${mangaId}/thumbnail`,
             status: (0, exports.parseMangaStatus)(result.status),
             // langFlag: metadata.language,
             langFlag: "Todo",
@@ -3108,16 +2947,6 @@ class TachiDesk extends paperback_extensions_common_1.Source {
             ? JSON.parse(chaptersResponse.data)
             : chaptersResponse.data;
         const chapters = [];
-        // Chapters language is only available on the serie page
-        // const serieRequest = createRequestObject({
-        //     url: `${tachiAPI}/series/${mangaId}/`,
-        //     method: "GET",
-        // });
-        // const serieResponse = await this.requestManager.schedule(serieRequest, 1);
-        // const serieResult =
-        //     typeof serieResponse.data === "string"
-        //         ? JSON.parse(serieResponse.data)
-        //         : serieResponse.data;
         const languageCode = (0, Languages_1.parseLangCode)("Todo");
         for (const chapter of chaptersResult) {
             chapters.push(createChapter({
@@ -3135,8 +2964,6 @@ class TachiDesk extends paperback_extensions_common_1.Source {
     }
     async getChapterDetails(mangaId, chapterId) {
         const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        console.log("chapter id:" + chapterId);
-        console.log("manga id:" + mangaId);
         const request = createRequestObject({
             url: `${tachiAPI}/manga/${mangaId}/chapter/${chapterId}`,
             method: "GET",
@@ -3146,47 +2973,82 @@ class TachiDesk extends paperback_extensions_common_1.Source {
         const pages = [];
         for (const pageindex of Array(result.pageCount - 1).keys()) {
             pages.push(`${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${pageindex}`);
-            // if (SUPPORTED_IMAGE_TYPES.includes(page.mediaType)) {
-            //     pages.push(`${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${page.number}`);
-            // } else {
-            //     pages.push(
-            //         `${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${page.number}?convert=png`
-            //     );
-            // }
         }
-        // Determine the preferred reading direction which is only available in the serie metadata TODO
-        // const serieRequest = createRequestObject({
-        //     url: `${tachiAPI}/series/${mangaId}/`,
-        //     method: "GET",
-        // });
-        // const serieResponse = await this.requestManager.schedule(serieRequest, 1);
-        // const serieResult =
-        //     typeof serieResponse.data === "string"
-        //         ? JSON.parse(serieResponse.data)
-        //         : serieResponse.data;
-        // let longStrip = false;
-        // if (
-        //     ["VERTICAL", "WEBTOON"].includes(serieResult.metadata.readingDirection)
-        // ) {
-        //     longStrip = true;
-        // }
-        let longStrip = false;
         return createChapterDetails({
             id: chapterId,
-            longStrip: longStrip,
+            longStrip: true,
             mangaId: mangaId,
             pages: pages,
         });
     }
     async getSearchResults(searchQuery, metadata) {
-        // This function is also called when the user search in an other source. It should not throw if the server is unavailable.
-        return (0, Common_1.searchRequest)(searchQuery, metadata, this.requestManager, this.stateManager, PAGE_SIZE);
+        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
+        const SourcesList = await (0, Settings_1.getSourcesList)(this.stateManager);
+        const SelectedSources = Settings_1.TDSources.getSelectedSources(SourcesList);
+        if (tachiAPI === null) {
+            console.log("searchRequest failed because server settings are unset");
+            return createPagedResults({
+                results: (0, Common_1.getServerUnavailableMangaTiles)(),
+            });
+        }
+        const page = metadata?.page ?? 1;
+        const meta_sources = metadata?.sources ?? {};
+        const paramsList = [`pageNum=${page}`];
+        if (searchQuery.title !== undefined && searchQuery.title !== "") {
+            paramsList.push("searchTerm=" + encodeURIComponent(searchQuery.title));
+        }
+        let paramsString = "";
+        if (paramsList.length > 0) {
+            paramsString = "?" + paramsList.join("&");
+        }
+        const tiles = [];
+        for (const source of SelectedSources) {
+            if (page !== 1) {
+                if (!meta_sources[source.id])
+                    continue;
+            }
+            const request = createRequestObject({
+                url: `${tachiAPI}/source/${source.id}/search${paramsString}`,
+                method: "GET",
+            });
+            let response;
+            try {
+                response = await this.requestManager.schedule(request, 1);
+                if (response.status != 200) {
+                    continue;
+                }
+            }
+            catch (error) {
+                console.log(`searchRequest failed with error: ${error}`);
+                return createPagedResults({
+                    results: (0, Common_1.getServerUnavailableMangaTiles)(),
+                });
+            }
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            for (const serie of data.mangaList) {
+                tiles.push(createMangaTile({
+                    id: String(serie.id),
+                    title: createIconText({ text: serie.title }),
+                    subtitleText: createIconText({ text: source.displayName }),
+                    image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
+                }));
+            }
+            meta_sources[source.id] = data.hasNextPage;
+        }
+        metadata = tiles.length !== 0 ? { page: page + 1, sources: meta_sources } : undefined;
+        return createPagedResults({
+            results: tiles,
+            metadata,
+        });
     }
     async getHomePageSections(sectionCallback) {
-        // This function is called on the homepage and should not throw if the server is unavailable
         (0, Settings_1.getSources)(this.stateManager);
-        // We won't use `await this.getTachiAPI()` as we do not want to throw an error on
-        // the homepage when server settings are not set
         const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
         const SourcesList = await (0, Settings_1.getSourcesList)(this.stateManager);
         const SelectedSources = Settings_1.TDSources.getSelectedSources(SourcesList);
@@ -3201,12 +3063,11 @@ class TachiDesk extends paperback_extensions_common_1.Source {
             sectionCallback(section);
             return;
         }
-        // The source define two homepage sections: new and latest
         const sections = [];
         for (const source of SelectedSources) {
             sections.push({
                 section: createHomeSection({
-                    id: `${source.id}-popular`,
+                    id: `popular-${source.id}`,
                     title: `${source.displayName} Popular`,
                     view_more: true,
                 }),
@@ -3219,7 +3080,7 @@ class TachiDesk extends paperback_extensions_common_1.Source {
             if (source.supportsLatest) {
                 sections.push({
                     section: createHomeSection({
-                        id: `${source.id}-latest`,
+                        id: `latest-${source.id}`,
                         title: `${source.displayName} Latest`,
                         view_more: true,
                     }),
@@ -3233,6 +3094,7 @@ class TachiDesk extends paperback_extensions_common_1.Source {
         }
         const promises = [];
         for (const section of sections) {
+            sectionCallback(section.section);
             promises.push(this.requestManager.schedule(section.request, 1).then(response => {
                 let data;
                 try {
@@ -3241,7 +3103,6 @@ class TachiDesk extends paperback_extensions_common_1.Source {
                 catch (e) {
                     throw new Error(`${e}`);
                 }
-                sectionCallback(section.section);
                 const tiles = [];
                 for (const serie of data.mangaList) {
                     tiles.push(createMangaTile({
@@ -3260,67 +3121,35 @@ class TachiDesk extends paperback_extensions_common_1.Source {
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const page = metadata?.page ?? 0;
+        const page = metadata?.page ?? 1;
+        const sourceId = homepageSectionId.split('-')?.pop() ?? '';
+        const SelectedSources = Settings_1.TDSources.getSelectedSources([sourceId]) ?? [];
         const request = createRequestObject({
-            url: `${tachiAPI}/series/${homepageSectionId}`,
-            param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
+            url: `${tachiAPI}/source/${sourceId}/${homepageSectionId.includes('latest-') ? 'latest' : 'popular'}/${page}`,
             method: "GET",
         });
-        const data = await this.requestManager.schedule(request, 1);
-        const result = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+        const response = await this.requestManager.schedule(request, 1);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
         const tiles = [];
-        for (const serie of result.content) {
+        for (const serie of data.mangaList) {
             tiles.push(createMangaTile({
-                id: serie.id,
-                title: createIconText({ text: serie.metadata.title }),
-                image: `${tachiAPI}/series/${serie.id}/thumbnail`,
+                id: serie.id.toString(),
+                title: createIconText({ text: serie.title }),
+                image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
+                subtitleText: createIconText({ text: SelectedSources.map(x => x.displayName)[0] ?? '' })
             }));
         }
-        // If no series were returned we are on the last page
-        metadata = tiles.length === 0 ? undefined : { page: page + 1 };
+        metadata = data.hasNextPage ? { page: page + 1 } : undefined;
         return createPagedResults({
             results: tiles,
             metadata: metadata,
         });
-    }
-    async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        // We make requests of PAGE_SIZE titles to `series/updated/` until we got every titles
-        // or we got a title which `lastModified` metadata is older than `time`
-        let page = 0;
-        const foundIds = [];
-        let loadMore = true;
-        while (loadMore) {
-            const request = createRequestObject({
-                url: `${tachiAPI}/series/updated/`,
-                param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
-                method: "GET",
-            });
-            const data = await this.requestManager.schedule(request, 1);
-            const result = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-            for (const serie of result.content) {
-                const serieUpdated = new Date(serie.metadata.lastModified);
-                if (serieUpdated >= time) {
-                    if (ids.includes(serie)) {
-                        foundIds.push(serie);
-                    }
-                }
-                else {
-                    loadMore = false;
-                    break;
-                }
-            }
-            // If no series were returned we are on the last page
-            if (result.content.length === 0) {
-                loadMore = false;
-            }
-            page = page + 1;
-            if (foundIds.length > 0) {
-                mangaUpdatesFoundCallback(createMangaUpdates({
-                    ids: foundIds,
-                }));
-            }
-        }
     }
 }
 exports.TachiDesk = TachiDesk;
