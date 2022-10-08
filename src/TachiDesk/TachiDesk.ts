@@ -17,14 +17,23 @@ import {
     TagType,
 } from "paperback-extensions-common";
 
-import {parseLangCode} from "./Languages";
-
-import {getSources, getSourcesList, resetSettingsButton, serverSettingsMenu, TDSettings, TDSource, TDSources, testServerSettingsMenu,} from "./Settings";
+import {
+    parseLangCode
+} from "./Languages";
 
 import {
-    getAuthorizationString,
+    getSources, 
+    getSourcesList, 
+    resetSettingsButton, 
+    serverSettingsMenu, 
+    TDSettings, 
+    TDSource, 
+    TDSources, 
+    testServerSettingsMenu
+} from "./Settings";
+
+import {
     getTachiAPI,
-    getOptions,
     getServerUnavailableMangaTiles,
     SearchData
 } from "./Common";
@@ -96,10 +105,10 @@ export class TachiDesk extends Source {
             id: "main",
             header: "Source Settings",
             rows: async () => [
+                TDSettings(this.stateManager),
                 serverSettingsMenu(this.stateManager),
                 testServerSettingsMenu(this.stateManager, this.requestManager),
-                resetSettingsButton(this.stateManager),
-                TDSettings(this.stateManager)
+                resetSettingsButton(this.stateManager)
             ],
         });
     }
@@ -113,10 +122,14 @@ export class TachiDesk extends Source {
         });
 
         const response = await this.requestManager.schedule(request, 1);
-        const result =
-            typeof response.data === "string"
-                ? JSON.parse(response.data)
-                : response.data;
+        let result
+
+        try {
+            result = JSON.parse(response.data)
+        } catch (e) {
+        throw new Error(`${e}`)
+        }
+        
         const tagSections: [TagSection] = [
             createTagSection({ id: "0", label: "genres", tags: [] }),
         ];
@@ -161,10 +174,13 @@ export class TachiDesk extends Source {
         });
 
         const chaptersResponse = await this.requestManager.schedule(chapterRequest, 2);
-        const chaptersResult =
-            typeof chaptersResponse.data === "string"
-                ? JSON.parse(chaptersResponse.data)
-                : chaptersResponse.data;
+        let chaptersResult
+
+        try {
+            chaptersResult = JSON.parse(chaptersResponse.data)
+        } catch (e) {
+        throw new Error(`${e}`)
+        }
 
         const chapters: Chapter[] = [];
 
@@ -201,8 +217,13 @@ export class TachiDesk extends Source {
         });
 
         const data = await this.requestManager.schedule(request, 1);
-        const result =
-            typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+        let result
+
+        try {
+            result = JSON.parse(data.data)
+        } catch (e) {
+        throw new Error(`${e}`)
+        }
 
         const pages: string[] = [];
         

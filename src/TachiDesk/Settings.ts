@@ -9,7 +9,6 @@ import {
     retrieveStateData,
     setStateData,
     getTachiAPI,
-    getAuthorizationString,
 } from "./Common";
 
 /* Helper functions */
@@ -21,10 +20,9 @@ export const testServerSettings = async (
     // Try to establish a connection with the server. Return an human readable string containing the test result
 
     const tachiAPI = await getTachiAPI(stateManager)
-    const authorization = await getAuthorizationString(stateManager)
 
     // We check credentials are set in server settings
-    if (tachiAPI === null || authorization === null) {
+    if (tachiAPI === null) {
         return "Impossible: Unset credentials in server settings";
     }
 
@@ -34,7 +32,6 @@ export const testServerSettings = async (
         url: `${tachiAPI}/settings/about`,
         method: "GET",
         incognito: true, // We don't want the authorization to be cached
-        headers: { authorization: authorization },
     });
 
     let responseStatus = undefined;
@@ -52,9 +49,6 @@ export const testServerSettings = async (
     switch (responseStatus) {
         case 200: {
             return "Successful connection!";
-        }
-        case 401: {
-            return "Error 401 Unauthorized: Invalid credentials";
         }
         default: {
             return `Error ${responseStatus}`;
@@ -84,48 +78,9 @@ export const serverSettingsMenu = (
                         createInputField({
                             id: "serverAddress",
                             label: "Server URL",
-                            placeholder: "http://127.0.0.1:8080",
+                            placeholder: "http://127.0.0.1:4567",
                             value: values.serverURL,
                             maskInput: false,
-                        }),
-                        // createInputField({
-                        //     id: "serverUsername",
-                        //     label: "Email",
-                        //     placeholder: "demo@komga.org",
-                        //     value: values.serverUsername,
-                        //     maskInput: false,
-                        // }),
-                        // TS-Ignoring because this isnt documented yet
-                        // Fallback to default input field if the app version doesnt support
-                        // SecureInputField
-                        // @ts-ignore
-                        // (typeof createSecureInputField == 'undefined' ? createInputField : createSecureInputField)({
-                        //     id: "serverPassword",
-                        //     label: "Password",
-                        //     placeholder: "Some Super Secret Password",
-                        //     value: values.serverPassword
-                        // }),
-                    ]),
-                }),
-                createSection({
-                    id: "sourceOptions",
-                    header: "Source Options",
-                    footer: "",
-                    rows: async () => retrieveStateData(stateManager).then((values) => [
-                        createSwitch({
-                            id: 'showOnDeck',
-                            label: 'Show On Deck',
-                            value: values.showOnDeck,
-                        }),
-                        createSwitch({
-                            id: 'showContinueReading',
-                            label: 'Show Continue Reading',
-                            value: values.showContinueReading,
-                        }),
-                        createSwitch({
-                            id: 'orderResultsAlphabetically',
-                            label: 'Sort results alphabetically',
-                            value: values.orderResultsAlphabetically,
                         }),
                     ]),
                 }),
