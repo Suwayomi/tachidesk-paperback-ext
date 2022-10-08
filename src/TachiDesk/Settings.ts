@@ -162,7 +162,7 @@ export const testServerSettingsMenu = (
     });
 };
 
-interface TDSource {
+export interface TDSource {
     id:             string;
     name:           string;
     lang:           string;
