@@ -1,10 +1,11 @@
+## Warning: Project is not being maintained!
+**The original maintainer doesn't own the device to maintain this repo anymore thus this repo is archived, contact us on [Suwayomi discord](https://discord.gg/DDZdqZWaHA) if you want become a maintainer ^^**
+
 # Tachidesk Paperback Extension
 <img src="https://user-images.githubusercontent.com/47613715/230618874-1d8bef58-382a-483e-9a4d-377714648965.png" alt="drawing" width="200"/>
 
 This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi extensions on iOS!
 [Tachidesk](https://github.com/Suwayomi/Tachidesk-Server) is a rewrite of [Tachiyomi](https://tachiyomi.org/) for the Desktop, this extensions queries a  Tachidesk instance to retrieve content.
-
-** I dont own the device to maintain this repo anymore thus this repo will be archived contact me if you want become a maintainer ^^ **
 
 ## Setup
 -   Setup a Tachidesk server by following this [guide](https://github.com/Suwayomi/Tachidesk-Server#downloading-and-running-the-app).
