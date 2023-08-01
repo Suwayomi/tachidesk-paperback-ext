@@ -1,28 +1,27 @@
 {
-  "name": "extensions-main",
+  "name": "tachidesk-paperback-ext",
   "version": "1.0.0",
   "repositoryName": "Tachidesk Extension",
-  "description": "The default source for Paperback, MangaDex",
+  "description": "Community maintained Paperback extension repository",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node dist/api.js",
-    "build": "tsc",
-    "test": "node_modules/.bin/mocha --timeout 300000 -r ts-node/register src/**/*.test.ts",
-    "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test",
-    "bundle": "paperback bundle",
-    "serve": "paperback serve"
+    "bundle": "npx paperback bundle",
+    "serve": "npx paperback serve",
+    "test": "npx paperback test",
+    "nodemon": "nodemon"
   },
-  "author": "Alex Zorzi",
-  "license": "ISC",
+  "author": "Netsky",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.11.0",
-    "@typescript-eslint/parser": "^5.11.0",
+    "@tsconfig/recommended": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.57.1",
     "eslint": "^7.27.0",
     "eslint-plugin-modules-newline": "^0.0.6",
-    "typescript": "^4.7.2"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
-    "paperback-cli": "^2.0.0-alpha.13",
-    "paperback-extensions-common": "^5.0.0-alpha.5"
+    "@paperback/toolchain": "^0.8.0-alpha.47",
+    "@paperback/types": "^0.8.0-alpha.47"
   }
 }
