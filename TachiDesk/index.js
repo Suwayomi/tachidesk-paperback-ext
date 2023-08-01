@@ -765,11 +765,11 @@ exports.resetSettingsButton = resetSettingsButton;
 },{}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Tachidesk = exports.TachideskInfo = void 0;
+exports.TachiDesk = exports.TachiDeskInfo = void 0;
 const types_1 = require("@paperback/types");
 const Common_1 = require("./Common");
 const Settings_1 = require("./Settings");
-exports.TachideskInfo = {
+exports.TachiDeskInfo = {
     author: 'ofelizestevez & Alles',
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
@@ -785,7 +785,7 @@ exports.TachideskInfo = {
     ],
     intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.SETTINGS_UI | types_1.SourceIntents.HOMEPAGE_SECTIONS
 };
-class Tachidesk {
+class TachiDesk {
     constructor() {
         // Paperback required defaults
         // Statemanager saves states for the extension (like localstorage api)
@@ -1121,7 +1121,7 @@ class Tachidesk {
         });
     }
 }
-exports.Tachidesk = Tachidesk;
+exports.TachiDesk = TachiDesk;
 
 },{"./Common":62,"./Settings":63,"@paperback/types":61}]},{},[64])(64)
 });
