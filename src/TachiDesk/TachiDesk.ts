@@ -31,7 +31,7 @@ import {
     serverAddressSettings
 } from './Settings';
 
-export const TachideskInfo: SourceInfo = {
+export const TachiDeskInfo: SourceInfo = {
     author: 'ofelizestevez & Alles',
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
@@ -48,7 +48,7 @@ export const TachideskInfo: SourceInfo = {
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS
 }
 
-export class Tachidesk implements HomePageSectionsProviding, ChapterProviding, SearchResultsProviding {
+export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, SearchResultsProviding {
 
     // Paperback required defaults
     // Statemanager saves states for the extension (like localstorage api)
