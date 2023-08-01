@@ -22,7 +22,7 @@ import {
     TachiCategoriesClass,
     TachiSourcesClass,
     serverUnavailableMangaTiles
-} from './common';
+} from './Common';
 
 import {
     resetSettingsButton,
