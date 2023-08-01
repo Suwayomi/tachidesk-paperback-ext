@@ -1,21 +1,22 @@
+---
 on:
   push:
     branches:
       - master
   pull_request:
-      types: [closed]
-      branches:
-          - master
+    types:
+      - closed
+    branches:
+      - master
 name: Bundle and Publish Sources
 jobs:
   build:
     name: Bundle and Publish Sources
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x]
-
+        node-version:
+          - 14.x
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v2
@@ -23,8 +24,6 @@ jobs:
         uses: actions/setup-node@v2.1.2
         with:
           node-version: ${{ matrix.node-version }}
-
-	      
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
