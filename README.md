@@ -22,6 +22,7 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 
 ##### Credits
 - [AlexZorzi](https://github.com/AlexZorzi) repo author
+- [ofelizestevez](https://github.com/ofelizestevez) for the active help on this repo and for the 0.8 upgrade
 - [xOnlyFadi](https://github.com/xOnlyFadi) for the active help on this repo
 - [TheNetsky](https://github.com/TheNetsky) for the technical help
 - Paperback Team for the awesome platform
