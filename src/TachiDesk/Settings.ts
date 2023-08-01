@@ -10,7 +10,7 @@ import {
     TachiAPIClass,
     TachiCategoriesClass,
     TachiSourcesClass
-} from "./common"
+} from "./Common"
 
 export const serverAddressSettings = (stateManager: SourceStateManager, requestManager: RequestManager, tachiAPI: TachiAPIClass): DUINavigationButton => {
     let label = "Click on the button!";
