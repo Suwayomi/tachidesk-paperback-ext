@@ -1,11 +1,47 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Sources = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BadgeColor = void 0;
+var BadgeColor;
+(function (BadgeColor) {
+    BadgeColor["BLUE"] = "default";
+    BadgeColor["GREEN"] = "success";
+    BadgeColor["GREY"] = "info";
+    BadgeColor["YELLOW"] = "warning";
+    BadgeColor["RED"] = "danger";
+})(BadgeColor = exports.BadgeColor || (exports.BadgeColor = {}));
+
+},{}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],3:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HomeSectionType = void 0;
+var HomeSectionType;
+(function (HomeSectionType) {
+    HomeSectionType["singleRowNormal"] = "singleRowNormal";
+    HomeSectionType["singleRowLarge"] = "singleRowLarge";
+    HomeSectionType["doubleRow"] = "doubleRow";
+    HomeSectionType["featured"] = "featured";
+})(HomeSectionType = exports.HomeSectionType || (exports.HomeSectionType = {}));
+
+},{}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],5:[function(require,module,exports){
+"use strict";
 /**
  * Request objects hold information for a particular source (see sources for example)
  * This allows us to to use a generic api to make the calls against any source
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.urlEncodeObject = exports.convertTime = exports.Source = void 0;
+/**
+* @deprecated Use {@link PaperbackExtensionBase}
+*/
 class Source {
     constructor(cheerio) {
         this.cheerio = cheerio;
@@ -62,225 +98,19 @@ function urlEncodeObject(obj) {
 }
 exports.urlEncodeObject = urlEncodeObject;
 
-},{}],2:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Tracker = void 0;
-class Tracker {
-    constructor(cheerio) {
-        this.cheerio = cheerio;
-    }
-}
-exports.Tracker = Tracker;
-
-},{}],3:[function(require,module,exports){
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Source"), exports);
-__exportStar(require("./Tracker"), exports);
-
-},{"./Source":1,"./Tracker":2}],4:[function(require,module,exports){
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./base"), exports);
-__exportStar(require("./models"), exports);
-
-},{"./base":3,"./models":47}],5:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
 },{}],6:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],7:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],8:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],9:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],10:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],11:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],12:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],13:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],14:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],15:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],16:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],17:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],18:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],19:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],20:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],21:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],22:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],23:[function(require,module,exports){
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Button"), exports);
-__exportStar(require("./Form"), exports);
-__exportStar(require("./Header"), exports);
-__exportStar(require("./InputField"), exports);
-__exportStar(require("./Label"), exports);
-__exportStar(require("./Link"), exports);
-__exportStar(require("./MultilineLabel"), exports);
-__exportStar(require("./NavigationButton"), exports);
-__exportStar(require("./OAuthButton"), exports);
-__exportStar(require("./Section"), exports);
-__exportStar(require("./Select"), exports);
-__exportStar(require("./Switch"), exports);
-__exportStar(require("./WebViewButton"), exports);
-__exportStar(require("./FormRow"), exports);
-__exportStar(require("./Stepper"), exports);
-
-},{"./Button":8,"./Form":9,"./FormRow":10,"./Header":11,"./InputField":12,"./Label":13,"./Link":14,"./MultilineLabel":15,"./NavigationButton":16,"./OAuthButton":17,"./Section":18,"./Select":19,"./Stepper":20,"./Switch":21,"./WebViewButton":22}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HomeSectionType = void 0;
-var HomeSectionType;
-(function (HomeSectionType) {
-    HomeSectionType["singleRowNormal"] = "singleRowNormal";
-    HomeSectionType["singleRowLarge"] = "singleRowLarge";
-    HomeSectionType["doubleRow"] = "doubleRow";
-    HomeSectionType["featured"] = "featured";
-})(HomeSectionType = exports.HomeSectionType || (exports.HomeSectionType = {}));
-
-},{}],25:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LanguageCode = void 0;
-var LanguageCode;
-(function (LanguageCode) {
-    LanguageCode["UNKNOWN"] = "_unknown";
-    LanguageCode["BENGALI"] = "bd";
-    LanguageCode["BULGARIAN"] = "bg";
-    LanguageCode["BRAZILIAN"] = "br";
-    LanguageCode["CHINEESE"] = "cn";
-    LanguageCode["CZECH"] = "cz";
-    LanguageCode["GERMAN"] = "de";
-    LanguageCode["DANISH"] = "dk";
-    LanguageCode["ENGLISH"] = "gb";
-    LanguageCode["SPANISH"] = "es";
-    LanguageCode["FINNISH"] = "fi";
-    LanguageCode["FRENCH"] = "fr";
-    LanguageCode["WELSH"] = "gb";
-    LanguageCode["GREEK"] = "gr";
-    LanguageCode["CHINEESE_HONGKONG"] = "hk";
-    LanguageCode["HUNGARIAN"] = "hu";
-    LanguageCode["INDONESIAN"] = "id";
-    LanguageCode["ISRELI"] = "il";
-    LanguageCode["INDIAN"] = "in";
-    LanguageCode["IRAN"] = "ir";
-    LanguageCode["ITALIAN"] = "it";
-    LanguageCode["JAPANESE"] = "jp";
-    LanguageCode["KOREAN"] = "kr";
-    LanguageCode["LITHUANIAN"] = "lt";
-    LanguageCode["MONGOLIAN"] = "mn";
-    LanguageCode["MEXIAN"] = "mx";
-    LanguageCode["MALAY"] = "my";
-    LanguageCode["DUTCH"] = "nl";
-    LanguageCode["NORWEGIAN"] = "no";
-    LanguageCode["PHILIPPINE"] = "ph";
-    LanguageCode["POLISH"] = "pl";
-    LanguageCode["PORTUGUESE"] = "pt";
-    LanguageCode["ROMANIAN"] = "ro";
-    LanguageCode["RUSSIAN"] = "ru";
-    LanguageCode["SANSKRIT"] = "sa";
-    LanguageCode["SAMI"] = "si";
-    LanguageCode["THAI"] = "th";
-    LanguageCode["TURKISH"] = "tr";
-    LanguageCode["UKRAINIAN"] = "ua";
-    LanguageCode["VIETNAMESE"] = "vn";
-})(LanguageCode = exports.LanguageCode || (exports.LanguageCode = {}));
-
-},{}],26:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MangaStatus = void 0;
-var MangaStatus;
-(function (MangaStatus) {
-    MangaStatus[MangaStatus["ONGOING"] = 1] = "ONGOING";
-    MangaStatus[MangaStatus["COMPLETED"] = 0] = "COMPLETED";
-    MangaStatus[MangaStatus["UNKNOWN"] = 2] = "UNKNOWN";
-    MangaStatus[MangaStatus["ABANDONED"] = 3] = "ABANDONED";
-    MangaStatus[MangaStatus["HIATUS"] = 4] = "HIATUS";
-})(MangaStatus = exports.MangaStatus || (exports.MangaStatus = {}));
-
-},{}],27:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],28:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],29:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],30:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],31:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],32:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],33:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],34:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],35:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],36:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],37:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],38:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchOperator = void 0;
-var SearchOperator;
-(function (SearchOperator) {
-    SearchOperator["AND"] = "AND";
-    SearchOperator["OR"] = "OR";
-})(SearchOperator = exports.SearchOperator || (exports.SearchOperator = {}));
-
-},{}],39:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContentRating = void 0;
+exports.ContentRating = exports.SourceIntents = void 0;
+var SourceIntents;
+(function (SourceIntents) {
+    SourceIntents[SourceIntents["MANGA_CHAPTERS"] = 1] = "MANGA_CHAPTERS";
+    SourceIntents[SourceIntents["MANGA_TRACKING"] = 2] = "MANGA_TRACKING";
+    SourceIntents[SourceIntents["HOMEPAGE_SECTIONS"] = 4] = "HOMEPAGE_SECTIONS";
+    SourceIntents[SourceIntents["COLLECTION_MANAGEMENT"] = 8] = "COLLECTION_MANAGEMENT";
+    SourceIntents[SourceIntents["CLOUDFLARE_BYPASS_REQUIRED"] = 16] = "CLOUDFLARE_BYPASS_REQUIRED";
+    SourceIntents[SourceIntents["SETTINGS_UI"] = 32] = "SETTINGS_UI";
+})(SourceIntents = exports.SourceIntents || (exports.SourceIntents = {}));
 /**
  * A content rating to be attributed to each source.
  */
@@ -291,41 +121,15 @@ var ContentRating;
     ContentRating["ADULT"] = "ADULT";
 })(ContentRating = exports.ContentRating || (exports.ContentRating = {}));
 
-},{}],40:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],41:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],42:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TagType = void 0;
-/**
- * An enumerator which {@link SourceTags} uses to define the color of the tag rendered on the website.
- * Five types are available: blue, green, grey, yellow and red, the default one is blue.
- * Common colors are red for (Broken), yellow for (+18), grey for (Country-Proof)
- */
-var TagType;
-(function (TagType) {
-    TagType["BLUE"] = "default";
-    TagType["GREEN"] = "success";
-    TagType["GREY"] = "info";
-    TagType["YELLOW"] = "warning";
-    TagType["RED"] = "danger";
-})(TagType = exports.TagType || (exports.TagType = {}));
-
-},{}],43:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],44:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],45:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],46:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],47:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -334,680 +138,990 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Chapter"), exports);
-__exportStar(require("./HomeSection"), exports);
-__exportStar(require("./DynamicUI"), exports);
-__exportStar(require("./ChapterDetails"), exports);
-__exportStar(require("./Manga"), exports);
-__exportStar(require("./MangaTile"), exports);
-__exportStar(require("./RequestObject"), exports);
-__exportStar(require("./SearchRequest"), exports);
-__exportStar(require("./TagSection"), exports);
-__exportStar(require("./SourceTag"), exports);
-__exportStar(require("./Languages"), exports);
-__exportStar(require("./Constants"), exports);
-__exportStar(require("./MangaUpdate"), exports);
-__exportStar(require("./PagedResults"), exports);
-__exportStar(require("./ResponseObject"), exports);
-__exportStar(require("./RequestManager"), exports);
-__exportStar(require("./RequestHeaders"), exports);
+__exportStar(require("./Source"), exports);
+__exportStar(require("./ByteArray"), exports);
+__exportStar(require("./Badge"), exports);
+__exportStar(require("./interfaces"), exports);
 __exportStar(require("./SourceInfo"), exports);
-__exportStar(require("./SourceStateManager"), exports);
-__exportStar(require("./RequestInterceptor"), exports);
-__exportStar(require("./TrackedManga"), exports);
-__exportStar(require("./SourceManga"), exports);
-__exportStar(require("./TrackedMangaChapterReadAction"), exports);
-__exportStar(require("./TrackerActionQueue"), exports);
-__exportStar(require("./SearchField"), exports);
-__exportStar(require("./RawData"), exports);
-__exportStar(require("./SearchFilter"), exports);
+__exportStar(require("./HomeSectionType"), exports);
+__exportStar(require("./PaperbackExtensionBase"), exports);
 
-},{"./Chapter":5,"./ChapterDetails":6,"./Constants":7,"./DynamicUI":23,"./HomeSection":24,"./Languages":25,"./Manga":26,"./MangaTile":27,"./MangaUpdate":28,"./PagedResults":29,"./RawData":30,"./RequestHeaders":31,"./RequestInterceptor":32,"./RequestManager":33,"./RequestObject":34,"./ResponseObject":35,"./SearchField":36,"./SearchFilter":37,"./SearchRequest":38,"./SourceInfo":39,"./SourceManga":40,"./SourceStateManager":41,"./SourceTag":42,"./TagSection":43,"./TrackedManga":44,"./TrackedMangaChapterReadAction":45,"./TrackerActionQueue":46}],48:[function(require,module,exports){
+},{"./Badge":1,"./ByteArray":2,"./HomeSectionType":3,"./PaperbackExtensionBase":4,"./Source":5,"./SourceInfo":6,"./interfaces":15}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setStateData = exports.retrieveStateData = exports.getTachiAPI = exports.getServerUnavailableMangaTiles = void 0;
-function getServerUnavailableMangaTiles() {
-    return [
-        createMangaTile({
-            id: "Tachidesk",
-            title: createIconText({ text: "Tachidesk" }),
-            image: "",
-            subtitleText: createIconText({ text: "unavailable" }),
-        }),
-    ];
-}
-exports.getServerUnavailableMangaTiles = getServerUnavailableMangaTiles;
-// 
-// TACHI API STATE METHODS
-//
-const DEFAULT_TACHI_SERVER_ADDRESS = 'http://127.0.0.1:4567';
-const DEFAULT_TACHI_API = DEFAULT_TACHI_SERVER_ADDRESS + '/api/v1';
-async function getTachiAPI(stateManager) {
-    return await stateManager.retrieve('tachiAPI') ?? DEFAULT_TACHI_API;
-}
-exports.getTachiAPI = getTachiAPI;
-async function retrieveStateData(stateManager) {
-    const serverURL = await stateManager.retrieve('serverAddress') ?? DEFAULT_TACHI_SERVER_ADDRESS;
-    return { serverURL };
-}
-exports.retrieveStateData = retrieveStateData;
-async function setStateData(stateManager, data) {
-    await setTachiServerAddress(stateManager, data['serverAddress'] ?? DEFAULT_TACHI_SERVER_ADDRESS);
-}
-exports.setStateData = setStateData;
-async function setTachiServerAddress(stateManager, apiUri) {
-    await stateManager.store('serverAddress', apiUri);
-    await stateManager.store('tachiAPI', createtachiAPI(apiUri));
-}
-function createtachiAPI(serverAddress) {
-    return serverAddress + (serverAddress.slice(-1) === '/' ? 'api/v1' : '/api/v1');
-}
+
+},{}],9:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],10:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],11:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],12:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],13:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],14:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],15:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./ChapterProviding"), exports);
+__exportStar(require("./CloudflareBypassRequestProviding"), exports);
+__exportStar(require("./HomePageSectionsProviding"), exports);
+__exportStar(require("./MangaProgressProviding"), exports);
+__exportStar(require("./MangaProviding"), exports);
+__exportStar(require("./RequestManagerProviding"), exports);
+__exportStar(require("./SearchResultsProviding"), exports);
+
+},{"./ChapterProviding":8,"./CloudflareBypassRequestProviding":9,"./HomePageSectionsProviding":10,"./MangaProgressProviding":11,"./MangaProviding":12,"./RequestManagerProviding":13,"./SearchResultsProviding":14}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],18:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],19:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],21:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],22:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],23:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],24:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],25:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],26:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],27:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],28:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],29:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],30:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],31:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],32:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],33:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],34:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],35:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],36:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],37:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],38:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],39:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],40:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],41:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],42:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],43:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],44:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],45:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],46:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],47:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],48:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
 },{}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetSettingsButton = exports.TDSettings = exports.getSources = exports.getSourcesList = exports.TDSources = exports.testServerSettingsMenu = exports.serverSettingsMenu = exports.testServerSettings = void 0;
-const Common_1 = require("./Common");
-/* Helper functions */
-const testServerSettings = async (stateManager, requestManager) => {
-    // Try to establish a connection with the server. Return an human readable string containing the test result
-    const tachiAPI = await (0, Common_1.getTachiAPI)(stateManager);
-    // We check credentials are set in server settings
-    if (tachiAPI === null) {
-        return "Impossible: Unset credentials in server settings";
+
+},{}],50:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],51:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],52:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],53:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],54:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],55:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],56:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],57:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],58:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],59:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+},{}],60:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-    // To test these information, we try to make a connection to the server
-    // We could use a better endpoint to test the connection
-    const request = createRequestObject({
-        url: `${tachiAPI}/settings/about`,
-        method: "GET",
-        incognito: true, // We don't want the authorization to be cached
-    });
-    let responseStatus = undefined;
-    try {
-        const response = await requestManager.schedule(request, 1);
-        responseStatus = response.status;
-        JSON.parse(response.data); // throws error if an non json is found
-    }
-    catch (error) {
-        // If the server is unavailable error.message will be 'AsyncOperationTimedOutError'
-        return `Failed: Could not connect to server - ${error.message}`;
-    }
-    switch (responseStatus) {
-        case 200: {
-            return "Successful connection!";
-        }
-        default: {
-            return `Error ${responseStatus}`;
-        }
-    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-exports.testServerSettings = testServerSettings;
-/* UI definition */
-// NOTE: Submitted data won't be tested
-const serverSettingsMenu = (stateManager) => {
-    return createNavigationButton({
-        id: "server_settings",
-        value: "",
-        label: "Server Settings",
-        form: createForm({
-            onSubmit: async (values) => (0, Common_1.setStateData)(stateManager, values),
-            validate: async () => true,
-            sections: async () => [
-                createSection({
-                    id: "serverSettings",
-                    header: "Server Settings",
-                    footer: "Tested on Tachidesk Server version: v0.6.5 r1125",
-                    rows: async () => (0, Common_1.retrieveStateData)(stateManager).then((values) => [
-                        createInputField({
-                            id: "serverAddress",
-                            label: "Server URL",
-                            placeholder: "http://127.0.0.1:4567",
-                            value: values.serverURL,
-                            maskInput: false,
-                        }),
-                    ]),
-                }),
-            ],
-        }),
-    });
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./DynamicUI/Exports/DUIBinding"), exports);
+__exportStar(require("./DynamicUI/Exports/DUIForm"), exports);
+__exportStar(require("./DynamicUI/Exports/DUIFormRow"), exports);
+__exportStar(require("./DynamicUI/Exports/DUISection"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIButton"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIHeader"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIInputField"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUILabel"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUILink"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIMultilineLabel"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUINavigationButton"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIOAuthButton"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUISecureInputField"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUISelect"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUIStepper"), exports);
+__exportStar(require("./DynamicUI/Rows/Exports/DUISwitch"), exports);
+__exportStar(require("./Exports/ChapterDetails"), exports);
+__exportStar(require("./Exports/Chapter"), exports);
+__exportStar(require("./Exports/Cookie"), exports);
+__exportStar(require("./Exports/HomeSection"), exports);
+__exportStar(require("./Exports/IconText"), exports);
+__exportStar(require("./Exports/MangaInfo"), exports);
+__exportStar(require("./Exports/MangaProgress"), exports);
+__exportStar(require("./Exports/PartialSourceManga"), exports);
+__exportStar(require("./Exports/MangaUpdates"), exports);
+__exportStar(require("./Exports/PBCanvas"), exports);
+__exportStar(require("./Exports/PBImage"), exports);
+__exportStar(require("./Exports/PagedResults"), exports);
+__exportStar(require("./Exports/RawData"), exports);
+__exportStar(require("./Exports/Request"), exports);
+__exportStar(require("./Exports/SourceInterceptor"), exports);
+__exportStar(require("./Exports/RequestManager"), exports);
+__exportStar(require("./Exports/Response"), exports);
+__exportStar(require("./Exports/SearchField"), exports);
+__exportStar(require("./Exports/SearchRequest"), exports);
+__exportStar(require("./Exports/SourceCookieStore"), exports);
+__exportStar(require("./Exports/SourceManga"), exports);
+__exportStar(require("./Exports/SecureStateManager"), exports);
+__exportStar(require("./Exports/SourceStateManager"), exports);
+__exportStar(require("./Exports/Tag"), exports);
+__exportStar(require("./Exports/TagSection"), exports);
+__exportStar(require("./Exports/TrackedMangaChapterReadAction"), exports);
+__exportStar(require("./Exports/TrackerActionQueue"), exports);
+
+},{"./DynamicUI/Exports/DUIBinding":17,"./DynamicUI/Exports/DUIForm":18,"./DynamicUI/Exports/DUIFormRow":19,"./DynamicUI/Exports/DUISection":20,"./DynamicUI/Rows/Exports/DUIButton":21,"./DynamicUI/Rows/Exports/DUIHeader":22,"./DynamicUI/Rows/Exports/DUIInputField":23,"./DynamicUI/Rows/Exports/DUILabel":24,"./DynamicUI/Rows/Exports/DUILink":25,"./DynamicUI/Rows/Exports/DUIMultilineLabel":26,"./DynamicUI/Rows/Exports/DUINavigationButton":27,"./DynamicUI/Rows/Exports/DUIOAuthButton":28,"./DynamicUI/Rows/Exports/DUISecureInputField":29,"./DynamicUI/Rows/Exports/DUISelect":30,"./DynamicUI/Rows/Exports/DUIStepper":31,"./DynamicUI/Rows/Exports/DUISwitch":32,"./Exports/Chapter":33,"./Exports/ChapterDetails":34,"./Exports/Cookie":35,"./Exports/HomeSection":36,"./Exports/IconText":37,"./Exports/MangaInfo":38,"./Exports/MangaProgress":39,"./Exports/MangaUpdates":40,"./Exports/PBCanvas":41,"./Exports/PBImage":42,"./Exports/PagedResults":43,"./Exports/PartialSourceManga":44,"./Exports/RawData":45,"./Exports/Request":46,"./Exports/RequestManager":47,"./Exports/Response":48,"./Exports/SearchField":49,"./Exports/SearchRequest":50,"./Exports/SecureStateManager":51,"./Exports/SourceCookieStore":52,"./Exports/SourceInterceptor":53,"./Exports/SourceManga":54,"./Exports/SourceStateManager":55,"./Exports/Tag":56,"./Exports/TagSection":57,"./Exports/TrackedMangaChapterReadAction":58,"./Exports/TrackerActionQueue":59}],61:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-exports.serverSettingsMenu = serverSettingsMenu;
-const testServerSettingsMenu = (stateManager, requestManager) => {
-    return createNavigationButton({
-        id: "test_settings",
-        value: "",
-        label: "Try settings",
-        form: createForm({
-            onSubmit: async () => { },
-            validate: async () => true,
-            sections: async () => [
-                createSection({
-                    id: "information",
-                    header: "Connection to Tachidesk server:",
-                    rows: () => (0, exports.testServerSettings)(stateManager, requestManager).then(async (value) => [
-                        createLabel({
-                            label: value,
-                            value: "",
-                            id: "description",
-                        }),
-                    ]),
-                }),
-            ],
-        }),
-    });
-};
-exports.testServerSettingsMenu = testServerSettingsMenu;
-class SourceClass {
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./generated/_exports"), exports);
+__exportStar(require("./base/index"), exports);
+__exportStar(require("./compat/DyamicUI"), exports);
+
+},{"./base/index":7,"./compat/DyamicUI":16,"./generated/_exports":60}],62:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TachiSourcesClass = exports.TachiCategoriesClass = exports.TachiAPIClass = exports.serverUnavailableMangaTiles = void 0;
+function serverUnavailableMangaTiles() {
+    return [
+        App.createPartialSourceManga({
+            title: "Server",
+            image: "",
+            mangaId: "placeholder-id",
+            subtitle: "Unavailable"
+        })
+    ];
+}
+exports.serverUnavailableMangaTiles = serverUnavailableMangaTiles;
+class TachiAPIClass {
     constructor() {
-        this.Sources = [];
-        this.Sources = this.Sources.sort((a, b) => a.displayName > b.displayName ? 1 : -1);
-    }
-    getIDList() {
-        return this.Sources.map(Sources => Sources.id);
-    }
-    getSelectedSources(sources) {
-        const FilteredSources = [];
-        for (const source of sources) {
-            const fSources = this.Sources.filter(MSources => MSources.id === source);
-            if (fSources && fSources[0]) {
-                FilteredSources.push(fSources[0]);
+        this.serverAddress = "http://127.0.0.1:4567";
+        this.baseEndpoint = "/api/v1";
+        this.serverKey = "server_address";
+        // Initialize function by getting server address and returns itself
+        this.init = async (stateManager) => {
+            this.serverAddress = await this.getServerAddress(stateManager);
+            return this;
+        };
+        // Gets server address, and removes the slash from the end of the server (if there)
+        this.getServerAddress = async (stateManager) => {
+            let serverAddress = await stateManager.retrieve(this.serverKey) ?? this.serverAddress;
+            serverAddress = serverAddress.slice(-1) === '/' ? serverAddress.slice(0, -1) : serverAddress;
+            return serverAddress;
+        };
+        // Sets server address with statemanager and saves the values
+        this.setServerAddress = async (stateManager, serverAddress) => {
+            serverAddress = serverAddress.slice(-1) === '/' ? serverAddress.slice(0, -1) : serverAddress;
+            await stateManager.store(this.serverKey, serverAddress);
+            this.serverAddress = serverAddress;
+        };
+        this.getBaseURL = () => {
+            return this.serverAddress + this.baseEndpoint;
+        };
+        // Packages all the request processing.
+        // Creates request, checks if request reaches, if the request was good, and if response is JSON.
+        this.makeRequest = async (requestManager, apiEndpoint, method = "GET", data = {}, headers = {}) => {
+            const request = App.createRequest({
+                url: this.getBaseURL() + apiEndpoint,
+                method,
+                data,
+                headers
+            });
+            let response;
+            let responseStatus;
+            let responseData;
+            try {
+                response = await requestManager.schedule(request, 0);
             }
-        }
-        const SortedSources = FilteredSources.sort((a, b) => a.displayName > b.displayName ? 1 : -1);
-        return SortedSources;
-    }
-    getNameFromID(id) {
-        return this.Sources.filter(Sources => Sources.id == id)[0]?.displayName ?? 'Unknown';
-    }
-    getDefault() {
-        return this.Sources.filter(Sources => Sources.default).map(Sources => Sources.id);
+            catch (error) {
+                return new Error(this.getBaseURL() + apiEndpoint);
+            }
+            try {
+                responseStatus = response?.status;
+            }
+            catch (error) {
+                return Error("Couldn't connect to server.");
+            }
+            if (responseStatus != 200) {
+                return Error("Your query is invalid.");
+            }
+            try {
+                responseData = JSON.parse(response.data ?? "");
+            }
+            catch (error) {
+                return Error(apiEndpoint);
+            }
+            return responseData;
+        };
+        // Test request (for test server settings)
+        this.testRequest = async (requestManager) => {
+            return await this.makeRequest(requestManager, "/settings/about/");
+        };
     }
 }
-exports.TDSources = new SourceClass;
-const getSourcesList = async (stateManager) => {
-    return await stateManager.retrieve('tdsources') ?? [
-        {
-            id: "0",
-            name: "Local source",
-            displayName: "Local source"
-        },
-    ];
-};
-exports.getSourcesList = getSourcesList;
-const getSources = async (stateManager) => {
-    const tachiAPI = await (0, Common_1.getTachiAPI)(stateManager);
-    const requestManager = createRequestManager({
-        requestsPerSecond: 4,
-        requestTimeout: 20000,
-    });
-    const request = createRequestObject({
-        url: `${tachiAPI}/source/list`,
-        method: "GET",
-    });
-    const response = await requestManager.schedule(request, 1);
-    let data;
-    try {
-        data = JSON.parse(response.data);
+exports.TachiAPIClass = TachiAPIClass;
+class TachiCategoriesClass {
+    constructor() {
+        // Categories are sent in order, so there's no point in me saving them
+        this.DEFAULT_CATEGORIES = {
+            "0": "Default"
+        };
+        this.DEFAULT_API_ENDPOINT = "/category/";
+        this.allCategories = this.DEFAULT_CATEGORIES;
+        this.selectedCategories = Object.keys(this.allCategories);
+        this.selectedCategoryKey = "selected_category";
+        // Initialize by getting AllCategories and selectedCategories
+        this.init = async (stateManager, requestManager, tachiAPI) => {
+            this.allCategories = this.DEFAULT_CATEGORIES;
+            this.selectedCategories = await stateManager.retrieve(this.selectedCategoryKey) ?? this.selectedCategories;
+            const requestedCategories = await tachiAPI.makeRequest(requestManager, this.DEFAULT_API_ENDPOINT);
+            if (requestedCategories instanceof Error) {
+                return requestedCategories;
+            }
+            for (const category of requestedCategories) {
+                this.allCategories[category.id] = category.name;
+            }
+            return this;
+        };
+        // Returns allCategories, could be better for stability to run another stateManager retreive and use allcategories as default value
+        this.getAllCategories = () => {
+            return this.allCategories;
+        };
+        this.getSelectedCategories = async (stateManager) => {
+            return await stateManager.retrieve(this.selectedCategoryKey) ?? this.selectedCategories;
+        };
+        this.setSelectedCategories = async (stateManager, categories) => {
+            await stateManager.store(this.selectedCategoryKey, categories);
+            this.selectedCategories = categories;
+        };
+        // allCategories == {id: name}, thus allcategories[id] == name.
+        // Used by label resolver
+        this.getSelectedCategoryFromId = (categoryId) => {
+            return this.allCategories[categoryId] ?? "";
+        };
     }
-    catch (e) {
-        throw new Error(`${e}`);
+}
+exports.TachiCategoriesClass = TachiCategoriesClass;
+class TachiSourcesClass {
+    constructor() {
+        this.DEFAULT_SOURCES = {
+            "0": {
+                "name": "Local source",
+                "lang": "localsourcelang",
+                "iconUrl": "/api/v1/extension/icon/localSource",
+                "supportsLatest": true,
+                "isConfigurable": false,
+                "isNsfw": false,
+                "displayName": "Local source"
+            }
+        };
+        this.allSources = this.DEFAULT_SOURCES;
+        this.selectedSources = Object.keys(this.allSources);
+        this.DEFAULT_API_ENDPOINT = "/source/list";
+        this.allSourcesKey = "all_sources";
+        this.selectedSourceKey = "selected_sources";
+        // Initializes by getting selected sources and set all sources
+        this.init = async (stateManager, requestManager, tachiAPI) => {
+            this.selectedSources = await stateManager.retrieve(this.selectedSourceKey) ?? this.selectedSources;
+            const requestedSources = await tachiAPI.makeRequest(requestManager, this.DEFAULT_API_ENDPOINT);
+            if (requestedSources instanceof Error) {
+                return requestedSources;
+            }
+            this.setAllSources(stateManager, requestedSources);
+            return this;
+        };
+        this.getAllSources = () => {
+            return this.allSources ?? this.DEFAULT_SOURCES;
+        };
+        this.setAllSources = async (stateManager, allSources) => {
+            for (const source of allSources) {
+                this.allSources[source.id] = {
+                    "name": source.name,
+                    "lang": source.lang,
+                    "iconUrl": source.iconUrl,
+                    "supportsLatest": source.supportsLatest,
+                    "isConfigurable": source.isConfigurable,
+                    "isNsfw": source.isNsfw,
+                    "displayName": source.displayName
+                };
+            }
+            await stateManager.store(this.allSourcesKey, this.allSources);
+        };
+        this.getSelectedSources = async (stateManager) => {
+            return await stateManager.retrieve(this.selectedSourceKey) ?? this.selectedSources;
+        };
+        this.setSelectedSources = async (stateManager, sources) => {
+            await stateManager.store(this.selectedSourceKey, sources);
+            this.selectedSources = sources;
+        };
+        this.getSourceNameFromId = (sourceId) => {
+            return this.allSources[sourceId]["displayName"] ?? "";
+        };
     }
-    if (data.length === 0)
-        throw Error('Could not Find any sources avaliable in the api');
-    exports.TDSources.Sources = data;
-};
-exports.getSources = getSources;
-const TDSettings = (stateManager) => {
-    return createNavigationButton({
-        id: 'tdsource_settings',
-        value: '',
-        label: 'TachiDesk Source Settings',
-        form: createForm({
-            onSubmit: (values) => {
-                return Promise.all([
-                    stateManager.store('tdsources', values.tdsources),
-                ]).then();
-            },
-            validate: () => {
-                return Promise.resolve(true);
-            },
-            sections: () => {
-                return Promise.resolve([
-                    createSection({
-                        id: 'tachidesk_sources',
-                        footer: '',
-                        rows: () => {
-                            return Promise.all([
-                                (0, exports.getSourcesList)(stateManager),
-                            ]).then(async (values) => {
-                                return [
-                                    createSelect({
-                                        id: 'tdsources',
-                                        label: 'Sources',
-                                        options: exports.TDSources.getIDList(),
-                                        displayLabel: option => exports.TDSources.getNameFromID(option),
-                                        value: values[0],
-                                        allowsMultiselect: true,
-                                        minimumOptionCount: 1,
-                                    })
-                                ];
-                            });
-                        }
+}
+exports.TachiSourcesClass = TachiSourcesClass;
+
+},{}],63:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resetSettingsButton = exports.selectedCategoriesSettings = exports.selectedSourcesSettings = exports.serverAddressSettings = void 0;
+const serverAddressSettings = (stateManager, requestManager, tachiAPI) => {
+    let label = "Click on the button!";
+    // Provides an input field, a button which sends a test request, and a label showing us the result of said request.
+    return App.createDUINavigationButton({
+        id: "server_settings",
+        label: "Server Settings",
+        form: App.createDUIForm({
+            sections: async () => {
+                return [
+                    App.createDUISection({
+                        id: "server_address_section",
+                        isHidden: false,
+                        rows: async () => [
+                            App.createDUIInputField({
+                                id: "server_address_input",
+                                label: "Server URL",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await tachiAPI.getServerAddress(stateManager);
+                                    },
+                                    async set(newValue) {
+                                        await tachiAPI.setServerAddress(stateManager, newValue);
+                                    }
+                                })
+                            }),
+                            App.createDUIButton({
+                                id: "test_server_button",
+                                label: "Test Server",
+                                onTap: async () => {
+                                    const value = await tachiAPI.testRequest(requestManager);
+                                    label = value instanceof Error ? value.message : JSON.stringify(value);
+                                }
+                            }),
+                            App.createDUILabel({
+                                id: "testing_button",
+                                label: label
+                            })
+                        ]
                     })
-                ]);
+                ];
             }
         })
     });
 };
-exports.TDSettings = TDSettings;
-const resetSettingsButton = (stateManager) => {
-    return createButton({
-        id: "reset",
+exports.serverAddressSettings = serverAddressSettings;
+const selectedSourcesSettings = async (stateManager, requestManager, tachiAPI, tachiSources) => {
+    try {
+        const tachiSourcesInitResponse = await tachiSources.init(stateManager, requestManager, tachiAPI);
+        if (tachiSourcesInitResponse instanceof Error) {
+            throw tachiSourcesInitResponse;
+        }
+        tachiSources = tachiSourcesInitResponse;
+    }
+    catch (error) { }
+    // Provides a multiselectable list of sources
+    return App.createDUISelect({
+        id: "selected_sources_settings",
+        label: "Sources",
+        allowsMultiselect: true,
+        options: Object.keys(tachiSources.getAllSources()),
+        labelResolver: async (option) => tachiSources.getAllSources()[option]["displayName"],
+        value: App.createDUIBinding({
+            async get() {
+                return await tachiSources.getSelectedSources(stateManager);
+            },
+            async set(newValue) {
+                await tachiSources.setSelectedSources(stateManager, newValue);
+            }
+        })
+    });
+};
+exports.selectedSourcesSettings = selectedSourcesSettings;
+const selectedCategoriesSettings = async (stateManager, requestManager, tachiAPI, tachiCategories) => {
+    try {
+        const tachiCategoriesInitResponse = await tachiCategories.init(stateManager, requestManager, tachiAPI);
+        if (tachiCategoriesInitResponse instanceof Error) {
+            throw tachiCategoriesInitResponse;
+        }
+        tachiCategories = tachiCategoriesInitResponse;
+    }
+    catch (error) {
+    }
+    // Provides a multiselectable list of categories
+    return App.createDUISelect({
+        id: "selected_categories_settings",
+        label: "Categories",
+        allowsMultiselect: true,
+        options: Object.keys(tachiCategories.getAllCategories()),
+        labelResolver: async (option) => tachiCategories.getSelectedCategoryFromId(option),
+        value: App.createDUIBinding({
+            async get() {
+                return await tachiCategories.getSelectedCategories(stateManager);
+            },
+            async set(newValue) {
+                await tachiCategories.setSelectedCategories(stateManager, newValue);
+            }
+        })
+    });
+};
+exports.selectedCategoriesSettings = selectedCategoriesSettings;
+// Button that's supposed to reset all settings.
+// Seems to be currently broken (8-1-23) [m/d/yyyy].
+const resetSettingsButton = (stateManager, tachiAPI, tachiSources, tachiCategories) => {
+    return App.createDUIButton({
+        id: "reset_button",
         label: "Reset to Default",
-        value: "",
         onTap: async () => {
             await Promise.all([
-                await (0, Common_1.setStateData)(stateManager, {}),
-                await stateManager.store('tdsources', null),
+                await tachiAPI.setServerAddress(stateManager, null),
+                await tachiSources.setSelectedSources(stateManager, null),
+                await tachiCategories.setSelectedCategories(stateManager, null),
+                await tachiSources.setAllSources(stateManager, null)
             ]);
         }
     });
 };
 exports.resetSettingsButton = resetSettingsButton;
 
-},{"./Common":48}],50:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TachiDesk = exports.capitalize = exports.parseMangaStatus = exports.TachiDeskInfo = void 0;
-const paperback_extensions_common_1 = require("paperback-extensions-common");
-const Settings_1 = require("./Settings");
+exports.Tachidesk = exports.TachideskInfo = void 0;
+const types_1 = require("@paperback/types");
 const Common_1 = require("./Common");
-// This source use Tachi REST API
-// https://tachiurl/api/swagger-u
-// Manga are represented by `series`
-// Chapters are represented by `books`
-// The Basic Authentication is handled by the interceptor
-// Code and method used by both the source and the tracker are defined in the duplicated `TachiCommon.ts` file
-// Due to the self hosted nature of Tachi, this source requires the user to enter its server credentials in the source settings menu
-// Some methods are known to throw errors without specific actions from the user. They try to prevent this behavior when server settings are not set.
-// This include:
-//  - homepage sections
-//  - getTags() which is called on the homepage
-//  - search method which is called even if the user search in an other source
-exports.TachiDeskInfo = {
-    version: "0.0.1",
-    name: "Tachidesk",
-    icon: "icon.png",
-    author: "Alles",
-    authorWebsite: "https://github.com/AlexZorzi",
-    description: "Tachidesk extension",
-    contentRating: paperback_extensions_common_1.ContentRating.EVERYONE,
+const Settings_1 = require("./Settings");
+exports.TachideskInfo = {
+    author: 'ofelizestevez & Alles',
+    description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
+    icon: 'icon.png',
+    name: 'Tachidesk',
+    version: '1.0',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
+    contentRating: types_1.ContentRating.EVERYONE,
     sourceTags: [
         {
-            text: "Tachiyomi Magic",
-            type: paperback_extensions_common_1.TagType.RED,
-        },
+            text: "Self-hosted",
+            type: types_1.BadgeColor.GREY
+        }
     ],
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.SETTINGS_UI | types_1.SourceIntents.HOMEPAGE_SECTIONS
 };
-const parseMangaStatus = (tachiStatus) => {
-    switch (tachiStatus) {
-        case "ENDED":
-            return paperback_extensions_common_1.MangaStatus.COMPLETED;
-        case "ONGOING":
-            return paperback_extensions_common_1.MangaStatus.ONGOING;
-        case "ABANDONED":
-            return paperback_extensions_common_1.MangaStatus.ONGOING;
-        case "HIATUS":
-            return paperback_extensions_common_1.MangaStatus.ONGOING;
-    }
-    return paperback_extensions_common_1.MangaStatus.ONGOING;
-};
-exports.parseMangaStatus = parseMangaStatus;
-const capitalize = (tag) => {
-    return tag.replace(/^\w/, (c) => c.toUpperCase());
-};
-exports.capitalize = capitalize;
-class TachiDesk extends paperback_extensions_common_1.Source {
+class Tachidesk {
     constructor() {
-        super(...arguments);
-        this.stateManager = createSourceStateManager({});
-        this.requestManager = createRequestManager({
+        // Paperback required defaults
+        // Statemanager saves states for the extension (like localstorage api)
+        // Request manager makes HTTP requests
+        this.stateManager = App.createSourceStateManager();
+        this.requestManager = App.createRequestManager({
             requestsPerSecond: 4,
             requestTimeout: 20000,
         });
-        /*override async filterUpdatedManga(
-            mangaUpdatesFoundCallback: (updates: MangaUpdates) => void,
-            time: Date,
-            ids: string[]
-        ): Promise<void> {
-            const tachiAPI = await getTachiAPI(this.stateManager);
-    
-            // We make requests of PAGE_SIZE titles to `series/updated/` until we got every titles
-            // or we got a title which `lastModified` metadata is older than `time`
-            let page = 0;
-            const foundIds: string[] = [];
-            let loadMore = true;
-    
-            while (loadMore) {
-                const request = createRequestObject({
-                    url: `${tachiAPI}/series/updated/`,
-                    param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
-                    method: "GET",
-                });
-    
-                const data = await this.requestManager.schedule(request, 1);
-                const result =
-                    typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-    
-                for (const serie of result.content) {
-                    const serieUpdated = new Date(serie.metadata.lastModified);
-    
-                    if (serieUpdated >= time) {
-                        if (ids.includes(serie)) {
-                            foundIds.push(serie);
-                        }
-                    } else {
-                        loadMore = false;
-                        break;
-                    }
-                }
-    
-                // If no series were returned we are on the last page
-                if (result.content.length === 0) {
-                    loadMore = false;
-                }
-    
-                page = page + 1;
-    
-                if (foundIds.length > 0) {
-                    mangaUpdatesFoundCallback(
-                        createMangaUpdates({
-                            ids: foundIds,
-                        })
-                    );
-                }
-            }
-        }*/
+        // Tachidesk essentials. Packages up code neatly so it could be used in multiple places cleanly
+        // TachiAPI handles the server address and making requests
+        // TachiSources and TachiCategories handle library items (sources, categories)
+        this.tachiAPI = new Common_1.TachiAPIClass().init(this.stateManager);
+        this.tachiSources = new Common_1.TachiSourcesClass();
+        this.tachiCategories = new Common_1.TachiCategoriesClass();
+        // Variable used for getMangaShareUrl. Updated by getChapters, meaning that it updates the server address everytime the user opens a manga
+        // Technically it doesn't have to be updated this often, thus it has room for improvement
+        this.serverAddress = "";
     }
+    // Provides the settings for the extension
     async getSourceMenu() {
-        return createSection({
+        const tachiAPI = await this.tachiAPI;
+        return App.createDUISection({
             id: "main",
             header: "Source Settings",
+            isHidden: false,
             rows: async () => [
-                (0, Settings_1.TDSettings)(this.stateManager),
-                (0, Settings_1.serverSettingsMenu)(this.stateManager),
-                (0, Settings_1.testServerSettingsMenu)(this.stateManager, this.requestManager),
-                (0, Settings_1.resetSettingsButton)(this.stateManager)
-            ],
+                (0, Settings_1.serverAddressSettings)(this.stateManager, this.requestManager, tachiAPI),
+                await (0, Settings_1.selectedSourcesSettings)(this.stateManager, this.requestManager, tachiAPI, this.tachiSources),
+                await (0, Settings_1.selectedCategoriesSettings)(this.stateManager, this.requestManager, tachiAPI, this.tachiCategories),
+                (0, Settings_1.resetSettingsButton)(this.stateManager, tachiAPI, this.tachiSources, this.tachiCategories),
+            ]
         });
     }
+    // Provides share url for manga share button, if statement seems to not work
+    getMangaShareUrl(mangaId) {
+        if (this.serverAddress != "") {
+            return this.serverAddress + "/manga/" + mangaId;
+        }
+        return "";
+    }
+    // Provides paperback with all of the details of the manga
     async getMangaDetails(mangaId) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const request = createRequestObject({
-            url: `${tachiAPI}/manga/${mangaId}/`,
-            method: "GET",
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        let result;
-        try {
-            result = JSON.parse(response.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
-        const tagSections = [
-            createTagSection({ id: "0", label: "genres", tags: [] }),
+        const tachiAPI = await this.tachiAPI;
+        const manga = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId);
+        // throw new Error(this.serverAddress)
+        const image = await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl;
+        const artist = manga.artist;
+        const author = manga.author;
+        const desc = manga.description;
+        const status = manga.status;
+        const titles = [manga.title];
+        const tags = [
+            App.createTagSection({
+                id: "0", label: "genres", tags: manga.genre.map((tag) => App.createTag({
+                    id: tag,
+                    label: tag
+                }))
+            }),
         ];
-        // For each tag, we append a type identifier to its id and capitalize its label
-        tagSections[0].tags = result.genre.map((elem) => createTag({ id: "genre-" + elem, label: (0, exports.capitalize)(elem) }));
-        const authors = [result.author];
-        const artists = [result.artist];
-        return createManga({
+        return App.createSourceManga({
             id: mangaId,
-            titles: [result.title],
-            image: `${tachiAPI}/manga/${mangaId}/thumbnail`,
-            status: (0, exports.parseMangaStatus)(result.status),
-            // langFlag: metadata.language,
-            langFlag: "Todo",
-            // Unused: langName
-            artist: artists.join(", "),
-            author: authors.join(", "),
-            desc: result.description ? result.description : "No summary",
-            tags: tagSections,
-            // lastUpdate: result.lastModified,
-            lastUpdate: new Date(),
+            mangaInfo: App.createMangaInfo({
+                titles,
+                image,
+                author,
+                artist,
+                desc,
+                status,
+                tags
+            })
         });
     }
+    // Provides paperback with list of chapters, updates this.serverAddress
     async getChapters(mangaId) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const chapterRequest = createRequestObject({
-            url: `${tachiAPI}/manga/${mangaId}/chapters`,
-            param: "",
-            method: "GET",
-        });
-        const chaptersResponse = await this.requestManager.schedule(chapterRequest, 2);
-        let chaptersResult;
-        try {
-            chaptersResult = JSON.parse(chaptersResponse.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
+        const tachiAPI = await this.tachiAPI;
+        const chaptersData = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapters");
+        this.serverAddress = await tachiAPI.getServerAddress(this.stateManager);
         const chapters = [];
-        //const languageCode = parseLangCode("Todo");
-        for (const chapter of chaptersResult) {
-            chapters.push(createChapter({
-                id: String(chapter.index),
-                mangaId: mangaId,
-                chapNum: parseFloat(chapter.chapterNumber),
-                //langCode: languageCode,
-                name: `${chapter.name}`,
-                time: new Date(chapter.uploadDate),
-                // @ts-ignore
-                sortingIndex: chapter.index
+        for (const chapter of chaptersData) {
+            const id = String(chapter.index);
+            const chapNum = parseFloat(chapter.chapterNumber);
+            const name = chapter.name;
+            const time = new Date(chapter.uploadDate);
+            const sortingIndex = chapter.index;
+            chapters.push(App.createChapter({
+                id,
+                name,
+                chapNum,
+                time,
+                sortingIndex
             }));
         }
         return chapters;
     }
+    // Called when user opens a manga. It's used to get the page links
     async getChapterDetails(mangaId, chapterId) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const request = createRequestObject({
-            url: `${tachiAPI}/manga/${mangaId}/chapter/${chapterId}`,
-            method: "GET",
-        });
-        const data = await this.requestManager.schedule(request, 1);
-        let result;
-        try {
-            result = JSON.parse(data.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
+        const tachiAPI = await this.tachiAPI;
+        const chapterResponse = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapter/" + chapterId);
         const pages = [];
-        for (const pageindex of Array(result.pageCount - 1).keys()) {
-            pages.push(`${tachiAPI}/manga/${mangaId}/chapter/${chapterId}/page/${pageindex}`);
+        await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapter/" + chapterId, "PUT", {
+            "read": "true",
+            "bookmarked": "",
+            "markPrevRead": "",
+            "lastPageRead": ""
+        }, {
+            "Content-Type": "application/json",
+        });
+        for (const pageIndex of Array(chapterResponse.pageCount).keys()) {
+            pages.push(tachiAPI.getBaseURL() + "/manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex);
         }
-        return createChapterDetails({
+        return App.createChapterDetails({
             id: chapterId,
-            longStrip: true,
-            mangaId: mangaId,
-            pages: pages,
+            mangaId,
+            pages
         });
     }
-    async getSearchResults(searchQuery, metadata) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const SourcesList = await (0, Settings_1.getSourcesList)(this.stateManager);
-        const SelectedSources = Settings_1.TDSources.getSelectedSources(SourcesList);
-        if (tachiAPI === null) {
-            console.log("searchRequest failed because server settings are unset");
-            return createPagedResults({
-                results: (0, Common_1.getServerUnavailableMangaTiles)(),
+    // Builds the homepage sections. It handles "Updated", "Categories", and "Sources" all by itself.
+    // Could be divided into multiple functions.
+    async getHomePageSections(sectionCallback) {
+        const promises = [];
+        const sections = [];
+        const tachiAPI = await this.tachiAPI;
+        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI);
+        const tachiCategories = await this.tachiCategories.init(this.stateManager, this.requestManager, tachiAPI);
+        // If we get a bad request, it will give us a server error manga tile.
+        if (tachiSources instanceof Error) {
+            const section = App.createHomeSection({
+                id: "unset",
+                title: "Server Error",
+                containsMoreItems: false,
+                type: "singleRowNormal",
+                items: (0, Common_1.serverUnavailableMangaTiles)()
+            });
+            sectionCallback(section);
+            return;
+        }
+        if (tachiCategories instanceof Error) {
+            const section = App.createHomeSection({
+                id: "unset",
+                title: "Server Error",
+                containsMoreItems: false,
+                type: "singleRowNormal",
+                items: (0, Common_1.serverUnavailableMangaTiles)()
+            });
+            sectionCallback(section);
+            return;
+        }
+        // Last test to ensure that we can connect to the server
+        if ((await this.tachiAPI).makeRequest(this.requestManager, "/settings/about") instanceof Error) {
+            const section = App.createHomeSection({
+                id: "unset",
+                title: "Server Error",
+                containsMoreItems: false,
+                type: "singleRowNormal",
+                items: (0, Common_1.serverUnavailableMangaTiles)()
+            });
+            sectionCallback(section);
+            return;
+        }
+        // Updated featured Section
+        sections.push({
+            section: App.createHomeSection({
+                id: "updated",
+                title: "Last Updated",
+                containsMoreItems: true,
+                type: types_1.HomeSectionType.featured
+            }),
+            request: App.createRequest({
+                url: tachiAPI.getBaseURL() + "/update/recentChapters/0",
+                method: "GET"
+            }),
+            subtitle: "",
+            type: "update"
+        });
+        // Category Sections
+        for (const categoryId of await tachiCategories.getSelectedCategories(this.stateManager)) {
+            sections.push({
+                section: App.createHomeSection({
+                    id: "category-" + categoryId,
+                    title: tachiCategories.getSelectedCategoryFromId(categoryId),
+                    containsMoreItems: false,
+                    type: types_1.HomeSectionType.singleRowLarge
+                }),
+                request: App.createRequest({
+                    url: tachiAPI.getBaseURL() + "/category/" + categoryId,
+                    method: "GET"
+                }),
+                subtitle: "",
+                type: "category"
             });
         }
+        // Source Sections
+        for (const sourceId of await tachiSources.getSelectedSources(this.stateManager)) {
+            sections.push({
+                section: App.createHomeSection({
+                    id: "popular-" + sourceId,
+                    title: tachiSources.getSourceNameFromId(sourceId) + " Popular",
+                    containsMoreItems: true,
+                    type: types_1.HomeSectionType.singleRowNormal
+                }),
+                request: App.createRequest({
+                    url: tachiAPI.getBaseURL() + "/source/" + sourceId + "/popular/1",
+                    method: "GET"
+                }),
+                subtitle: tachiSources.getSourceNameFromId(sourceId),
+                type: "source"
+            });
+            if (tachiSources.getAllSources()[sourceId]["supportsLatest"]) {
+                sections.push({
+                    section: App.createHomeSection({
+                        id: "latest-" + sourceId,
+                        title: tachiSources.getSourceNameFromId(sourceId) + " Latest",
+                        containsMoreItems: true,
+                        type: types_1.HomeSectionType.singleRowNormal
+                    }),
+                    request: App.createRequest({
+                        url: tachiAPI.getBaseURL() + "/source/" + sourceId + "/latest/1",
+                        method: "GET"
+                    }),
+                    subtitle: tachiSources.getSourceNameFromId(sourceId),
+                    type: "source"
+                });
+            }
+        }
+        // run promises
+        for (const section of sections) {
+            sectionCallback(section.section);
+            promises.push(this.requestManager.schedule(section.request, 1).then(async (response) => {
+                const json = JSON.parse(response.data ?? "");
+                const tiles = [];
+                if (section.type == "update") {
+                    for (const manga of json.page) {
+                        tiles.push(App.createPartialSourceManga({
+                            title: manga.chapter.name,
+                            mangaId: manga.manga.id.toString(),
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
+                            subtitle: ""
+                        }));
+                    }
+                }
+                if (section.type == "category") {
+                    for (const manga of json) {
+                        tiles.push(App.createPartialSourceManga({
+                            title: manga.title,
+                            mangaId: manga.id.toString(),
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl
+                        }));
+                    }
+                }
+                if (section.type == "source") {
+                    for (const manga of json.mangaList) {
+                        tiles.push(App.createPartialSourceManga({
+                            title: manga.title,
+                            mangaId: manga.id.toString(),
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                            subtitle: section.subtitle
+                        }));
+                    }
+                }
+                section.section.items = tiles;
+                sectionCallback(section.section);
+            }));
+        }
+        // awit promise all
+        await Promise.all(promises);
+    }
+    // Handles when users click on the "more" button in the homepage.
+    // Currently only set up to work with sources
+    async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
+        const sourceId = homepageSectionId.split('-').pop() ?? "";
+        const type = homepageSectionId.split("-")[0];
+        const tachiAPI = await this.tachiAPI;
+        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI);
+        if (tachiSources instanceof Error) {
+            throw tachiSources;
+        }
+        const tileData = await tachiAPI.makeRequest(this.requestManager, "/source/" + sourceId + "/" + type + "/" + page);
+        const tiles = [];
+        for (const tile of tileData.mangaList) {
+            tiles.push(App.createPartialSourceManga({
+                mangaId: tile.id.toString(),
+                title: tile.title,
+                image: await tachiAPI.getServerAddress(this.stateManager) + tile.thumbnailUrl,
+            }));
+        }
+        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined;
+        return App.createPagedResults({
+            results: tiles,
+            metadata: metadata
+        });
+    }
+    // Handles search
+    async getSearchResults(query, metadata) {
+        const tachiAPI = await this.tachiAPI;
+        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI);
+        if (tachiSources instanceof Error) {
+            throw tachiSources;
+        }
+        const selectedSources = await tachiSources.getSelectedSources(this.stateManager);
         const meta_sources = metadata?.sources ?? {};
+        const page = metadata?.page ?? 1;
         const paramsList = [`pageNum=${page}`];
-        if (searchQuery.title !== undefined && searchQuery.title !== "") {
-            paramsList.push("searchTerm=" + encodeURIComponent(searchQuery.title));
+        if (query.title !== undefined && query.title !== "") {
+            paramsList.push("searchTerm=" + encodeURIComponent(query.title));
         }
         let paramsString = "";
         if (paramsList.length > 0) {
             paramsString = "?" + paramsList.join("&");
         }
         const tiles = [];
-        for (const source of SelectedSources) {
+        for (const source of selectedSources) {
             if (page !== 1) {
                 if (!meta_sources[source.id])
                     continue;
             }
-            const request = createRequestObject({
-                url: `${tachiAPI}/source/${source.id}/search${paramsString}`,
-                method: "GET",
-            });
-            let response;
-            try {
-                response = await this.requestManager.schedule(request, 1);
-                if (response.status != 200) {
-                    continue;
-                }
-            }
-            catch (error) {
-                console.log(`searchRequest failed with error: ${error}`);
-                return createPagedResults({
-                    results: (0, Common_1.getServerUnavailableMangaTiles)(),
-                });
-            }
-            let data;
-            try {
-                data = JSON.parse(response.data);
-            }
-            catch (e) {
-                throw new Error(`${e}`);
-            }
-            for (const serie of data.mangaList) {
-                tiles.push(createMangaTile({
-                    id: String(serie.id),
-                    title: createIconText({ text: serie.title }),
-                    subtitleText: createIconText({ text: source.displayName }),
-                    image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
+            const mangaResults = await tachiAPI.makeRequest(this.requestManager, "/source/" + source + "/search" + paramsString);
+            for (const manga of mangaResults.mangaList) {
+                tiles.push(App.createPartialSourceManga({
+                    title: manga.title,
+                    mangaId: String(manga.id),
+                    image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                    subtitle: tachiSources.getSourceNameFromId(manga.sourceId)
                 }));
             }
-            meta_sources[source.id] = data.hasNextPage;
+            meta_sources[source] = mangaResults.hasNextPage;
         }
         metadata = tiles.length !== 0 ? { page: page + 1, sources: meta_sources } : undefined;
-        return createPagedResults({
+        return App.createPagedResults({
             results: tiles,
-            metadata,
-        });
-    }
-    async getHomePageSections(sectionCallback) {
-        (0, Settings_1.getSources)(this.stateManager);
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const SourcesList = await (0, Settings_1.getSourcesList)(this.stateManager);
-        const SelectedSources = Settings_1.TDSources.getSelectedSources(SourcesList);
-        if (tachiAPI === null) {
-            console.log("searchRequest failed because server settings are unset");
-            const section = createHomeSection({
-                id: "unset",
-                title: "Go to source settings to set your Tachi server credentials.",
-                view_more: false,
-                items: (0, Common_1.getServerUnavailableMangaTiles)(),
-            });
-            sectionCallback(section);
-            return;
-        }
-        const sections = [];
-        for (const source of SelectedSources) {
-            sections.push({
-                section: createHomeSection({
-                    id: `popular-${source.id}`,
-                    title: `${source.displayName} Popular`,
-                    view_more: true,
-                }),
-                request: createRequestObject({
-                    url: encodeURI(`${tachiAPI}/source/${source.id}/popular/1`),
-                    method: 'GET',
-                }),
-                subtitle: source.displayName
-            });
-            if (source.supportsLatest) {
-                sections.push({
-                    section: createHomeSection({
-                        id: `latest-${source.id}`,
-                        title: `${source.displayName} Latest`,
-                        view_more: true,
-                    }),
-                    request: createRequestObject({
-                        url: encodeURI(`${tachiAPI}/source/${source.id}/latest/1`),
-                        method: 'GET',
-                    }),
-                    subtitle: source.displayName
-                });
-            }
-        }
-        const promises = [];
-        for (const section of sections) {
-            sectionCallback(section.section);
-            promises.push(this.requestManager.schedule(section.request, 1).then(response => {
-                let data;
-                try {
-                    data = JSON.parse(response.data);
-                }
-                catch (e) {
-                    throw new Error(`${e}`);
-                }
-                const tiles = [];
-                for (const serie of data.mangaList) {
-                    tiles.push(createMangaTile({
-                        id: serie.id.toString(),
-                        title: createIconText({ text: serie.title }),
-                        image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
-                        subtitleText: createIconText({ text: section.subtitle })
-                    }));
-                }
-                section.section.items = tiles;
-                sectionCallback(section.section);
-            }));
-        }
-        // Make sure the function completes
-        await Promise.all(promises);
-    }
-    async getViewMoreItems(homepageSectionId, metadata) {
-        const tachiAPI = await (0, Common_1.getTachiAPI)(this.stateManager);
-        const page = metadata?.page ?? 1;
-        const sourceId = homepageSectionId.split('-')?.pop() ?? '';
-        const SelectedSources = Settings_1.TDSources.getSelectedSources([sourceId]) ?? [];
-        const request = createRequestObject({
-            url: `${tachiAPI}/source/${sourceId}/${homepageSectionId.includes('latest-') ? 'latest' : 'popular'}/${page}`,
-            method: "GET",
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        let data;
-        try {
-            data = JSON.parse(response.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
-        const tiles = [];
-        for (const serie of data.mangaList) {
-            tiles.push(createMangaTile({
-                id: serie.id.toString(),
-                title: createIconText({ text: serie.title }),
-                image: `${tachiAPI}/manga/${serie.id}/thumbnail`,
-                subtitleText: createIconText({ text: SelectedSources.map(x => x.displayName)[0] ?? '' })
-            }));
-        }
-        metadata = data.hasNextPage ? { page: page + 1 } : undefined;
-        return createPagedResults({
-            results: tiles,
-            metadata: metadata,
+            metadata
         });
     }
 }
-exports.TachiDesk = TachiDesk;
+exports.Tachidesk = Tachidesk;
 
-},{"./Common":48,"./Settings":49,"paperback-extensions-common":4}]},{},[50])(50)
+},{"./Common":62,"./Settings":63,"@paperback/types":61}]},{},[64])(64)
 });
