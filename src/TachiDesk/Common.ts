@@ -101,6 +101,8 @@ export class TachiCategoriesClass {
     DEFAULT_API_ENDPOINT = "/category/"
 
     allCategories = this.DEFAULT_CATEGORIES;
+    allCategoriesOrder = [0]
+
     selectedCategories = Object.keys(this.allCategories);
 
     selectedCategoryKey = "selected_category"
@@ -117,6 +119,7 @@ export class TachiCategoriesClass {
 
         for (const category of requestedCategories) {
             this.allCategories[category.id] = category.name;
+            this.allCategoriesOrder.push(category.id)
         }
 
         return this;
@@ -126,6 +129,10 @@ export class TachiCategoriesClass {
     getAllCategories = () => {
         return this.allCategories
     };
+
+    getAllCategoryIdsInOrder = () => {
+        return this.allCategoriesOrder
+    }
 
     getSelectedCategories = async (stateManager: SourceStateManager) => {
         return await stateManager.retrieve(this.selectedCategoryKey) ?? this.selectedCategories;

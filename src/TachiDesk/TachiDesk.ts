@@ -222,6 +222,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             sectionCallback(section);
             return;
         }
+
         // Last test to ensure that we can connect to the server
         if ((await this.tachiAPI).makeRequest(this.requestManager, "/settings/about") instanceof Error) {
             const section = App.createHomeSection({
@@ -251,12 +252,21 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             type: "update"
         })
 
+        let organized_categories = [];
+        let unorganized_categories = await tachiCategories.getSelectedCategories(this.stateManager);
+
+        for (const categoryId of tachiCategories.getAllCategoryIdsInOrder()){
+            if (unorganized_categories.includes(categoryId.toString())){
+                organized_categories.push(categoryId)
+            }
+        }
+
         // Category Sections
-        for (const categoryId of await tachiCategories.getSelectedCategories(this.stateManager)) {
+        for (const categoryId of organized_categories) {
             sections.push({
                 section: App.createHomeSection({
                     id: "category-" + categoryId,
-                    title: tachiCategories.getSelectedCategoryFromId(categoryId as string),
+                    title: tachiCategories.getSelectedCategoryFromId(categoryId.toString()),
                     containsMoreItems: false,
                     type: HomeSectionType.singleRowLarge
                 }),
