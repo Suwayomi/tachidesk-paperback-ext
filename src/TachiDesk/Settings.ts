@@ -129,20 +129,20 @@ export const resetSettingsButton = async (stateManager: SourceStateManager, tach
         id: "reset_button",
         label: "Reset to Default",
         onTap: async () => {
-                await tachiAPI.setServerAddress(stateManager, "http://127.0.0.1:4567")
-                await tachiSources.setSelectedSources(stateManager, ["0"])
-                await tachiCategories.setSelectedCategories(stateManager, ["0"])
-                await tachiSources.setAllSources(stateManager, {
-                    "0": {
-                        "name": "Local source",
-                        "lang": "localsourcelang",
-                        "iconUrl": "/api/v1/extension/icon/localSource",
-                        "supportsLatest": true,
-                        "isConfigurable": false,
-                        "isNsfw": false,
-                        "displayName": "Local source"
-                    }
-                })
+            await tachiAPI.setServerAddress(stateManager, "http://127.0.0.1:4567")
+            await tachiSources.setSelectedSources(stateManager, ["0"])
+            await tachiCategories.setSelectedCategories(stateManager, ["0"])
+            await tachiSources.setAllSources(stateManager, {
+                "0": {
+                    "name": "Local source",
+                    "lang": "localsourcelang",
+                    "iconUrl": "/api/v1/extension/icon/localSource",
+                    "supportsLatest": true,
+                    "isConfigurable": false,
+                    "isNsfw": false,
+                    "displayName": "Local source"
+                }
+            })
         }
     })
 }

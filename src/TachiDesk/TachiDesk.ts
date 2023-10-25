@@ -305,7 +305,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                     const tiles = []
                     if (section.type == "update") {
 
-                        for (const manga of json.page.slice(0,10)) {
+                        for (const manga of json.page.slice(0, 10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
                                     title: manga.manga.title,
@@ -318,7 +318,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                         }
                     }
                     if (section.type == "category") {
-                        for (const manga of json.slice(0,10)) {
+                        for (const manga of json.slice(0, 10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
                                     title: manga.title,
@@ -329,7 +329,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                         }
                     }
                     if (section.type == "source") {
-                        for (const manga of json.mangaList.slice(0,10)) {
+                        for (const manga of json.mangaList.slice(0, 10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
                                     title: manga.title,
@@ -364,7 +364,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         }
 
         const tiles = []
-        let tileData : any;
+        let tileData: any;
         let page;
 
         // Even if currentpageindex + 10 is bigger than currentpagelength, it will just cut to currentpagelength
@@ -372,12 +372,12 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             case "updated":
                 page = metadata?.page ?? 0;
                 tileData = await tachiAPI.makeRequest(this.requestManager, "/update/recentChapters/" + page)
-                for(const manga of tileData.page){
+                for (const manga of tileData.page) {
                     tiles.push(
                         App.createPartialSourceManga({
-                            title:manga.manga.title,
-                            mangaId:manga.manga.id.toString(),
-                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
+                            title: manga.manga.title,
+                            mangaId: manga.manga.id.toString(),
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
                             subtitle: ""
                         })
                     )
@@ -386,12 +386,12 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             case "category":
                 page = metadata?.page ?? -1;
                 tileData = await tachiAPI.makeRequest(this.requestManager, "/category/" + sourceId)
-                for(const manga of tileData){
+                for (const manga of tileData) {
                     tiles.push(
                         App.createPartialSourceManga({
                             title: manga.title,
                             mangaId: manga.id.toString(),
-                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
                             subtitle: ""
                         })
                     )
@@ -400,12 +400,12 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             default:
                 page = metadata?.page ?? 1;
                 tileData = await tachiAPI.makeRequest(this.requestManager, "/source/" + sourceId + "/" + type + "/" + page)
-                for(const manga of tileData.mangaList){
+                for (const manga of tileData.mangaList) {
                     tiles.push(
                         App.createPartialSourceManga({
                             title: manga.title,
                             mangaId: manga.id.toString(),
-                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
                             subtitle: ""
                         })
                     )
@@ -413,7 +413,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 break;
         }
 
-        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined 
+        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined
 
         return App.createPagedResults({
             results: tiles,

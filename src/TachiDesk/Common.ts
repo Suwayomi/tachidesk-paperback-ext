@@ -57,7 +57,7 @@ export class TachiAPIClass {
         let response;
         let responseStatus;
         let responseData;
-        
+
         try {
             response = await requestManager.schedule(request, 0);
         }
@@ -101,7 +101,6 @@ export class TachiCategoriesClass {
     DEFAULT_API_ENDPOINT = "/category/"
 
     allCategories = this.DEFAULT_CATEGORIES;
-
     selectedCategories = Object.keys(this.allCategories);
 
     selectedCategoryKey = "selected_category"
@@ -127,7 +126,6 @@ export class TachiCategoriesClass {
     getAllCategories = () => {
         return this.allCategories
     };
-
 
     getSelectedCategories = async (stateManager: SourceStateManager) => {
         return await stateManager.retrieve(this.selectedCategoryKey) ?? this.selectedCategories;
