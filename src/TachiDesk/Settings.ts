@@ -80,7 +80,7 @@ export const selectedSourcesSettings = async (stateManager: SourceStateManager, 
         labelResolver: async (option) => tachiSources.getAllSources()[option]["displayName"],
         value: App.createDUIBinding({
             async get() {
-                return await tachiSources.getSelectedSources(stateManager);
+                return (await tachiSources.getSelectedSources(stateManager));
             },
             async set(newValue) {
                 await tachiSources.setSelectedSources(stateManager, newValue)
@@ -124,17 +124,25 @@ export const selectedCategoriesSettings = async (stateManager: SourceStateManage
 
 // Button that's supposed to reset all settings.
 // Seems to be currently broken (8-1-23) [m/d/yyyy].
-export const resetSettingsButton = (stateManager: SourceStateManager, tachiAPI: TachiAPIClass, tachiSources: TachiSourcesClass, tachiCategories: TachiCategoriesClass): DUIButton => {
+export const resetSettingsButton = async (stateManager: SourceStateManager, tachiAPI: TachiAPIClass, tachiSources: TachiSourcesClass, tachiCategories: TachiCategoriesClass): Promise<DUIButton> => {
     return App.createDUIButton({
         id: "reset_button",
         label: "Reset to Default",
         onTap: async () => {
-            await Promise.all([
-                await tachiAPI.setServerAddress(stateManager, null),
-                await tachiSources.setSelectedSources(stateManager, null),
-                await tachiCategories.setSelectedCategories(stateManager, null),
-                await tachiSources.setAllSources(stateManager, null)
-            ])
+            await tachiAPI.setServerAddress(stateManager, "http://127.0.0.1:4567")
+            await tachiSources.setSelectedSources(stateManager, ["0"])
+            await tachiCategories.setSelectedCategories(stateManager, ["0"])
+            await tachiSources.setAllSources(stateManager, {
+                "0": {
+                    "name": "Local source",
+                    "lang": "localsourcelang",
+                    "iconUrl": "/api/v1/extension/icon/localSource",
+                    "supportsLatest": true,
+                    "isConfigurable": false,
+                    "isNsfw": false,
+                    "displayName": "Local source"
+                }
+            })
         }
     })
 }
