@@ -81,7 +81,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 serverAddressSettings(this.stateManager, this.requestManager, tachiAPI),
                 await selectedSourcesSettings(this.stateManager, this.requestManager, tachiAPI, this.tachiSources),
                 await selectedCategoriesSettings(this.stateManager, this.requestManager, tachiAPI, this.tachiCategories),
-                resetSettingsButton(this.stateManager, tachiAPI, this.tachiSources, this.tachiCategories),
+                await resetSettingsButton(this.stateManager, tachiAPI, this.tachiSources, this.tachiCategories),
             ]
         })
     }
@@ -169,15 +169,6 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         const chapterResponse = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapter/" + chapterId)
         const pages: string[] = []
 
-        await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapter/" + chapterId, "PUT", {
-            "read": "true",
-            "bookmarked": "",
-            "markPrevRead": "",
-            "lastPageRead": ""
-        }, {
-            "Content-Type": "application/json",
-        })
-
         for (const pageIndex of Array(chapterResponse.pageCount).keys()) {
             pages.push(tachiAPI.getBaseURL() + "/manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex)
         }
@@ -205,7 +196,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 id: "unset",
                 title: "Server Error",
                 containsMoreItems: false,
-                type: "singleRowNormal",
+                type: HomeSectionType.singleRowNormal,
                 items: serverUnavailableMangaTiles()
             });
             sectionCallback(section);
@@ -216,7 +207,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 id: "unset",
                 title: "Server Error",
                 containsMoreItems: false,
-                type: "singleRowNormal",
+                type: HomeSectionType.singleRowNormal,
                 items: serverUnavailableMangaTiles()
             });
             sectionCallback(section);
@@ -229,7 +220,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 id: "unset",
                 title: "Server Error",
                 containsMoreItems: false,
-                type: "singleRowNormal",
+                type: HomeSectionType.singleRowNormal,
                 items: serverUnavailableMangaTiles()
             });
             sectionCallback(section);
@@ -242,7 +233,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 id: "updated",
                 title: "Last Updated",
                 containsMoreItems: true,
-                type: HomeSectionType.featured
+                type: HomeSectionType.singleRowNormal
             }),
             request: App.createRequest({
                 url: tachiAPI.getBaseURL() + "/update/recentChapters/0",
@@ -252,23 +243,14 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             type: "update"
         })
 
-        let organized_categories = [];
-        let unorganized_categories = await tachiCategories.getSelectedCategories(this.stateManager);
-
-        for (const categoryId of tachiCategories.getAllCategoryIdsInOrder()){
-            if (unorganized_categories.includes(categoryId.toString())){
-                organized_categories.push(categoryId)
-            }
-        }
-
         // Category Sections
-        for (const categoryId of organized_categories) {
+        for (const categoryId of await tachiCategories.getSelectedCategories(this.stateManager)) {
             sections.push({
                 section: App.createHomeSection({
                     id: "category-" + categoryId,
                     title: tachiCategories.getSelectedCategoryFromId(categoryId.toString()),
-                    containsMoreItems: false,
-                    type: HomeSectionType.singleRowLarge
+                    containsMoreItems: true,
+                    type: HomeSectionType.singleRowNormal
                 }),
                 request: App.createRequest({
                     url: tachiAPI.getBaseURL() + "/category/" + categoryId,
@@ -323,10 +305,10 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                     const tiles = []
                     if (section.type == "update") {
 
-                        for (const manga of json.page) {
+                        for (const manga of json.page.slice(0,10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
-                                    title: manga.chapter.name,
+                                    title: manga.manga.title,
                                     mangaId: manga.manga.id.toString(),
                                     image: await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
                                     subtitle: ""
@@ -335,9 +317,8 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
                         }
                     }
-
                     if (section.type == "category") {
-                        for (const manga of json) {
+                        for (const manga of json.slice(0,10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
                                     title: manga.title,
@@ -348,7 +329,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                         }
                     }
                     if (section.type == "source") {
-                        for (const manga of json.mangaList) {
+                        for (const manga of json.mangaList.slice(0,10)) {
                             tiles.push(
                                 App.createPartialSourceManga({
                                     title: manga.title,
@@ -359,7 +340,6 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                             )
                         }
                     }
-
 
 
                     section.section.items = tiles
@@ -374,7 +354,6 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
     // Handles when users click on the "more" button in the homepage.
     // Currently only set up to work with sources
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        const page = metadata?.page ?? 1;
         const sourceId = homepageSectionId.split('-').pop() ?? ""
         const type = homepageSectionId.split("-")[0]
         const tachiAPI = await this.tachiAPI
@@ -384,20 +363,57 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             throw tachiSources;
         }
 
-        const tileData = await tachiAPI.makeRequest(this.requestManager, "/source/" + sourceId + "/" + type + "/" + page)
         const tiles = []
+        let tileData : any;
+        let page;
 
-        for (const tile of tileData.mangaList) {
-            tiles.push(
-                App.createPartialSourceManga({
-                    mangaId: tile.id.toString(),
-                    title: tile.title,
-                    image: await tachiAPI.getServerAddress(this.stateManager) + tile.thumbnailUrl,
-                })
-            )
+        // Even if currentpageindex + 10 is bigger than currentpagelength, it will just cut to currentpagelength
+        switch (type) {
+            case "updated":
+                page = metadata?.page ?? 0;
+                tileData = await tachiAPI.makeRequest(this.requestManager, "/update/recentChapters/" + page)
+                for(const manga of tileData.page){
+                    tiles.push(
+                        App.createPartialSourceManga({
+                            title:manga.manga.title,
+                            mangaId:manga.manga.id.toString(),
+                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
+                            subtitle: ""
+                        })
+                    )
+                }
+                break;
+            case "category":
+                page = metadata?.page ?? -1;
+                tileData = await tachiAPI.makeRequest(this.requestManager, "/category/" + sourceId)
+                for(const manga of tileData){
+                    tiles.push(
+                        App.createPartialSourceManga({
+                            title: manga.title,
+                            mangaId: manga.id.toString(),
+                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                            subtitle: ""
+                        })
+                    )
+                }
+                break
+            default:
+                page = metadata?.page ?? 1;
+                tileData = await tachiAPI.makeRequest(this.requestManager, "/source/" + sourceId + "/" + type + "/" + page)
+                for(const manga of tileData.mangaList){
+                    tiles.push(
+                        App.createPartialSourceManga({
+                            title: manga.title,
+                            mangaId: manga.id.toString(),
+                            image : await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
+                            subtitle: ""
+                        })
+                    )
+                }
+                break;
         }
 
-        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined
+        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined 
 
         return App.createPagedResults({
             results: tiles,

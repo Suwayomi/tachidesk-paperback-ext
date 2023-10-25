@@ -53,11 +53,11 @@ export class TachiAPIClass {
             data,
             headers
         });
-
+        console.log(JSON.stringify([request.url,request.headers,request.param ?? "", request.method, request.data, request.headers]))
         let response;
         let responseStatus;
         let responseData;
-
+        
         try {
             response = await requestManager.schedule(request, 0);
         }
@@ -186,6 +186,7 @@ export class TachiSourcesClass {
     }
 
     getAllSources = () => {
+        console.log(this.allSources ?? this.DEFAULT_SOURCES)
         return this.allSources ?? this.DEFAULT_SOURCES
     }
 
