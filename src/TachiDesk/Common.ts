@@ -181,7 +181,6 @@ export class TachiSourcesClass {
     }
 
     getAllSources = () => {
-        console.log(this.allSources ?? this.DEFAULT_SOURCES)
         return this.allSources ?? this.DEFAULT_SOURCES
     }
 
