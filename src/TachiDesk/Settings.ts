@@ -7,8 +7,6 @@ import {
 } from "@paperback/types"
 
 import {
-    DEFAULT_SELECTED_CATEGORIES,
-    DEFAULT_SELECTED_SOURCES,
     DEFAULT_SERVER_URL,
     fetchServerCategories,
     fetchServerSources,
@@ -52,7 +50,9 @@ import {
     testRequest
 } from "./Common"
 
+// 2 Sections -> 1 for server url, another for auth
 export const serverAddressSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
+    // Label that shows test response
     let label = "Click on the button!"
 
     return App.createDUINavigationButton({
@@ -60,7 +60,6 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
         label: "Server Settings",
         form: App.createDUIForm({
             sections: async () => {
-
                 return [
                     App.createDUISection({
                         id: "urlSection",
@@ -97,13 +96,13 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                     }),
                     App.createDUISection({
                         id: "authSettings",
-                        header: "Authentication",
+                        header: "Authorization",
                         isHidden: false,
                         rows: async () => [
                             // Auth Switch
                             App.createDUISwitch({
                                 id: "authStateSwitch",
-                                label: "Authorization Enabled",
+                                label: "Enabled",
                                 value: App.createDUIBinding({
                                     async get() {
                                         return await getAuthState(stateManager)
@@ -147,14 +146,14 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
     })
 }
 
+// Houses settings for Manga Per Row, and settings for each type of homepage section (recently updated, library category, and source )
+// for sections -> You can toggle them, change their style, change their content (which category/source)
 export const HomepageSettings = (stateManager:SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
-    
     return App.createDUINavigationButton({
         id: "homepageSettings",
         label: "Homepage Settings",
         form: App.createDUIForm({
             sections: async () => {
-                
                 return [
                     App.createDUISection({
                         id: "mangaPerRowSection",
@@ -196,7 +195,7 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                             App.createDUISelect({
                                 id: "updatedRowStyleSelect",
                                 label: "Style",
-                                options: Object.keys(rowStyles),
+                                options: rowStyles,
                                 allowsMultiselect: false,
                                 value: App.createDUIBinding({
                                     async get() {
@@ -232,7 +231,7 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                             App.createDUISelect({
                                 id: "categoryRowStyleSelect",
                                 label: "Style",
-                                options: Object.keys(rowStyles),
+                                options: rowStyles,
                                 allowsMultiselect: false,
                                 value: App.createDUIBinding({
                                     async get() {
@@ -269,7 +268,7 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                             App.createDUISelect({
                                 id: "sourceRowStyleSelect",
                                 label: "Style",
-                                options: Object.keys(rowStyles),
+                                options: rowStyles,
                                 allowsMultiselect: false,
                                 value: App.createDUIBinding({
                                     async get() {
@@ -292,10 +291,12 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
     })
 }
 
+// Category selection
 export const categoriesSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
     let serverCategories = await getServerCategories(stateManager);
     const serverURL = await getServerURL(stateManager);
 
+    // fetch categories only when the URL has been set
     if (serverURL !== DEFAULT_SERVER_URL){
         serverCategories = await fetchServerCategories(stateManager,requestManager)
         setServerCategories(stateManager, serverCategories)
@@ -311,19 +312,21 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
         },
         value: App.createDUIBinding({
             async get() {
-                return (await getSelectedCategories(stateManager)) ?? DEFAULT_SELECTED_CATEGORIES
+                return (await getSelectedCategories(stateManager))
             },
             async set(newValue) {
-                await setSelectedCategories(stateManager, newValue?? DEFAULT_SELECTED_CATEGORIES)
+                await setSelectedCategories(stateManager, newValue)
             }
         }),
     })
 }
 
+// Source selection
 export const sourceSettings = async (stateManager : SourceStateManager, requestManager : RequestManager) : Promise<DUISelect> => {
     let serverSources = await getServerSources(stateManager);
     const serverURL = await getServerURL(stateManager);
 
+    // only fetches when url has been set
     if (serverURL !== DEFAULT_SERVER_URL){
         serverSources = await fetchServerSources(stateManager, requestManager)
         setServerSources(stateManager, serverSources)
@@ -335,7 +338,7 @@ export const sourceSettings = async (stateManager : SourceStateManager, requestM
         allowsMultiselect: true,
         options: getSourcesIds(serverSources),
         labelResolver: async (option) => {
-            return (await getSourceNameFromId(serverSources, option)) ?? DEFAULT_SELECTED_SOURCES
+            return getSourceNameFromId(serverSources, option)
         },
         value: App.createDUIBinding({
             async get() {
@@ -349,7 +352,6 @@ export const sourceSettings = async (stateManager : SourceStateManager, requestM
 }
 
 export const resetSettingsButton = async (stateManager : SourceStateManager) : Promise<DUIButton> => {
-
     return App.createDUIButton({
         id: "resetSettingsButton",
         label: "Reset Settings",

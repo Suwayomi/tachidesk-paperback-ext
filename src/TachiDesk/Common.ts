@@ -1,5 +1,4 @@
 import {
-    HomeSectionType,
     RequestManager,
     SourceStateManager
 } from '@paperback/types'
@@ -15,46 +14,6 @@ export function serverUnavailableMangaTiles() {
     ]
 }
 
-// Defaults
-export const DEFAULT_SERVER_URL = "http://127.0.0.1:4567/";
-export const DEFAULT_API_ENDPOINT = "api/v1/";
-export const DEFAULT_SERVER_API = DEFAULT_SERVER_URL + DEFAULT_API_ENDPOINT;
-export const DEFAULT_AUTH_STATE = false;
-export const DEFAULT_AUTH_STRING = "";
-export const DEFAULT_USERNAME = "";
-export const DEFAULT_PASSWORD = "";
-
-export const DEFAULT_SERVER_CATEGORIES: Record<string, tachiCategory> = {
-    "0": {
-        id: 0,
-        order: 0,
-        name: "Default",
-        default: true,
-        size: 0,
-        includeInUpdate: "EXCLUDE",
-        meta: {
-            "additionalProp1": "string",
-            "additionalProp2": "string",
-            "additionalProp3": "string"
-        }
-    }
-};
-export const DEFAULT_SELECTED_CATEGORIES = ["0"];
-
-export const DEFAULT_SERVER_SOURCES: Record<string, tachiSources> = {
-    "0": {
-        id: "0",
-        name: "Local source",
-        lang: "localsourcelang",
-        iconUrl: "/api/v1/extension/icon/localSource",
-        supportsLatest: true,
-        isConfigurable: false,
-        isNsfw: false,
-        displayName: "Local source"
-    }
-}
-export const DEFAULT_SELECTED_SOURCES = ["0"]
-
 // StateManager Keys
 export const SERVER_URL_KEY = "serverURL";
 export const SERVER_API_KEY = "serverAPI";
@@ -68,6 +27,63 @@ export const SELECTED_CATEGORIES_KEY = "selectedCategories";
 
 export const SERVER_SOURCES_KEY = "serverSources";
 export const SELECTED_SOURCES_KEY = "selectedSources";
+
+export const MANGA_PER_ROW_KEY = "mangaPerRow"
+export const UPDATED_ROW_STATE_KEY = "updatedRowState"
+export const CATEGORY_ROW_STATE_KEY = "categoryRowState"
+export const SOURCE_ROW_STATE_KEY = "sourceRowState"
+export const UPDATED_ROW_STYLE_KEY = "updatedRowStyle"
+export const CATEGORY_ROW_STYLE_KEY = "categoryRowStyle"
+export const SOURCE_ROW_STYLE_KEY = "sourceRowStyle"
+
+// Defaults
+export const DEFAULT_SERVER_URL = "http://127.0.0.1:4567/";
+export const DEFAULT_API_ENDPOINT = "api/v1/";
+export const DEFAULT_SERVER_API = DEFAULT_SERVER_URL + DEFAULT_API_ENDPOINT;
+export const DEFAULT_AUTH_STATE = false;
+export const DEFAULT_AUTH_STRING = "";
+export const DEFAULT_USERNAME = "";
+export const DEFAULT_PASSWORD = "";
+
+export const DEFAULT_SERVER_CATEGORY: tachiCategory = {
+    id: 0,
+    order: 0,
+    name: "Default",
+    default: true,
+    size: 0,
+    includeInUpdate: "EXCLUDE",
+    meta: {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+    }
+}
+export const DEFAULT_SERVER_CATEGORIES: Record<string, tachiCategory> = { "0": DEFAULT_SERVER_CATEGORY };
+export const DEFAULT_SELECTED_CATEGORIES = ["0"];
+
+export const DEFAULT_SERVER_SOURCE : tachiSources = {
+    id: "0",
+    name: "Local source",
+    lang: "localsourcelang",
+    iconUrl: "/api/v1/extension/icon/localSource",
+    supportsLatest: true,
+    isConfigurable: false,
+    isNsfw: false,
+    displayName: "Local source"
+}
+export const DEFAULT_SERVER_SOURCES: Record<string, tachiSources> = {
+    "0": DEFAULT_SERVER_SOURCE
+}
+export const DEFAULT_SELECTED_SOURCES = ["0"]
+
+export const DEFAULT_MANGA_PER_ROW = 10;
+export const DEFAULT_UPDATED_ROW_STATE = true
+export const DEFAULT_CATEGORY_ROW_STATE = true
+export const DEFAULT_SOURCE_ROW_STATE = true
+export const DEFAULT_UPDATED_ROW_STYLE = ["singleRowNormal"]
+export const DEFAULT_CATEGORY_ROW_STYLE = ["singleRowNormal"]
+export const DEFAULT_SOURCE_ROW_STYLE = ["singleRowNormal"]
+export const rowStyles = ["singleRowNormal", "singleRowLarge", "featured", "doubleRow"]
 
 // ! Query Interfaces Start
 // interface categories
@@ -158,32 +174,25 @@ export async function resetSettings(stateManager: SourceStateManager) {
     await stateManager.store(SELECTED_CATEGORIES_KEY, DEFAULT_SELECTED_CATEGORIES)
     await stateManager.store(SERVER_SOURCES_KEY, DEFAULT_SERVER_SOURCES)
     await stateManager.store(SELECTED_SOURCES_KEY, DEFAULT_SELECTED_SOURCES)
-    await stateManager.store(MANGA_PER_ROW_KEY,DEFAULT_MANGA_PER_ROW)
-    await stateManager.store(UPDATED_ROW_STATE_KEY,DEFAULT_UPDATED_ROW_STATE)
-    await stateManager.store(CATEGORY_ROW_STATE_KEY,DEFAULT_CATEGORY_ROW_STATE)
-    await stateManager.store(SOURCE_ROW_STATE_KEY,DEFAULT_SOURCE_ROW_STATE)
-    await stateManager.store(UPDATED_ROW_STYLE_KEY,DEFAULT_UPDATED_ROW_STYLE)
-    await stateManager.store(CATEGORY_ROW_STYLE_KEY,DEFAULT_CATEGORY_ROW_STYLE)
-    await stateManager.store(SOURCE_ROW_STYLE_KEY,DEFAULT_SOURCE_ROW_STYLE)
+    await stateManager.store(MANGA_PER_ROW_KEY, DEFAULT_MANGA_PER_ROW)
+    await stateManager.store(UPDATED_ROW_STATE_KEY, DEFAULT_UPDATED_ROW_STATE)
+    await stateManager.store(CATEGORY_ROW_STATE_KEY, DEFAULT_CATEGORY_ROW_STATE)
+    await stateManager.store(SOURCE_ROW_STATE_KEY, DEFAULT_SOURCE_ROW_STATE)
+    await stateManager.store(UPDATED_ROW_STYLE_KEY, DEFAULT_UPDATED_ROW_STYLE)
+    await stateManager.store(CATEGORY_ROW_STYLE_KEY, DEFAULT_CATEGORY_ROW_STYLE)
+    await stateManager.store(SOURCE_ROW_STYLE_KEY, DEFAULT_SOURCE_ROW_STYLE)
 }
 // ! Reset Settings End
 
 // ! Server URL start
 
-// Clean server URL
-export function cleanServerURL(url: String) {
-    // If last character isn't a /, then add it to the url
-    return url.slice(-1) === '/' ? url : url + "/"
-}
-
-// Set server URL
 export async function setServerURL(stateManager: SourceStateManager, url: String) {
     url = url == "" ? DEFAULT_SERVER_URL : url
-    await stateManager.store(SERVER_URL_KEY, cleanServerURL(url))
-    await stateManager.store(SERVER_API_KEY, cleanServerURL(url) + DEFAULT_API_ENDPOINT)
+    url = url.slice(-1) === '/' ? url : url + "/" // Verified / at the end of URL
+    await stateManager.store(SERVER_URL_KEY, url)
+    await stateManager.store(SERVER_API_KEY, url + DEFAULT_API_ENDPOINT)
 }
 
-// get server URL
 export async function getServerURL(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_URL_KEY) as string | undefined) ?? DEFAULT_SERVER_URL
 }
@@ -192,63 +201,49 @@ export async function getServerURL(stateManager: SourceStateManager) {
 export async function getServerAPI(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_API_KEY) as string | undefined) ?? DEFAULT_SERVER_API
 }
-
 // !Server URL End
 
 // ! Authentication start
-
-// Set AuthState
 export async function setAuthState(stateManager: SourceStateManager, state: boolean) {
     await stateManager.store(AUTH_STATE_KEY, state)
 }
 
-// Get AuthState
 export async function getAuthState(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(AUTH_STATE_KEY) as boolean | undefined) ?? DEFAULT_AUTH_STATE
 }
 
-// Set Auth String
 export async function setAuthString(stateManager: SourceStateManager) {
     let username = await getUsername(stateManager);
     let password = await getPassword(stateManager);
 
-    let authString = 'Basic ' + Buffer.from(username + ':' + password, 'binary').toString('base64');
-
+    let authString = 'Basic ' + Buffer.from(username + ':' + password, 'binary').toString('base64'); // Base64 of username:password
     await stateManager.keychain.store(AUTH_STRING_KEY, authString);
 }
 
-// Get Auth String
 export async function getAuthString(stateManager: SourceStateManager) {
     return (await stateManager.keychain.retrieve(AUTH_STRING_KEY) as string | undefined) ?? DEFAULT_AUTH_STRING;
 }
 
-// Set Username
 export async function setUsername(stateManager: SourceStateManager, username: string) {
     await stateManager.store(USERNAME_KEY, username);
-    await setAuthString(stateManager)
+    await setAuthString(stateManager) // Set new auth string based on new username
 }
 
-// Get Username
 export async function getUsername(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(USERNAME_KEY) as string | undefined) ?? DEFAULT_USERNAME;
 }
 
-// Set Password
 export async function setPassword(stateManager: SourceStateManager, password: string) {
     await stateManager.keychain.store(PASSWORD_KEY, password);
-    await setAuthString(stateManager);
+    await setAuthString(stateManager); // Set new auth string based on new username
 }
 
-// Get Password
 export async function getPassword(stateManager: SourceStateManager) {
     return (await stateManager.keychain.retrieve(PASSWORD_KEY) as string | undefined) ?? DEFAULT_PASSWORD;
 }
-
 // ! Authentication End
 
 // ! Requests
-
-// Make Request
 export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data: Record<string, string> = {}, headers: Record<string, string> = {}) {
     const serverAPI = await getServerAPI(stateManager)
     const authEnabled = await getAuthState(stateManager);
@@ -267,6 +262,7 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
     let responseStatus;
     let responseData;
 
+    // Checks if the request actually went out
     try {
         response = await requestManager.schedule(request, 0);
     }
@@ -274,6 +270,7 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
         return new Error(serverAPI + apiEndpoint)
     }
 
+    // Checks if we got a response, then checks if we got a good response
     try {
         responseStatus = response?.status
     }
@@ -288,6 +285,7 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
         return Error("Your query is invalid. " + JSON.stringify(response?.status))
     }
 
+    // Checks for garbage data
     try {
         responseData = JSON.parse(response.data ?? "")
     }
@@ -298,22 +296,18 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
     return responseData
 }
 
-// Test Request
+// Requests used for the test server button. Could be useful to test connection at other points
 export async function testRequest(stateManager: SourceStateManager, requestManager: RequestManager) {
     return await makeRequest(stateManager, requestManager, "settings/about/")
 }
-
 // ! Requests End
 
-
-
 // ! Categories Start
-// Fetch Categories -- get with a fetch
+// Fetch Categories from server and returns them as an object
 export async function fetchServerCategories(stateManager: SourceStateManager, requestManager: RequestManager) {
     let categories: Record<string, tachiCategory> = {};
 
     const fetchedCategories = await makeRequest(stateManager, requestManager, "category/");
-
     fetchedCategories.forEach((category: tachiCategory) => {
         categories[JSON.stringify(category.id)] = category
     });
@@ -321,54 +315,37 @@ export async function fetchServerCategories(stateManager: SourceStateManager, re
     return categories
 }
 
-// Set Categories
 export async function setServerCategories(stateManager: SourceStateManager, categories: Record<string, tachiCategory>) {
     await stateManager.store(SERVER_CATEGORIES_KEY, categories)
 }
 
-// Get Categories
 export async function getServerCategories(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_CATEGORIES_KEY) as Record<string, tachiCategory> | undefined) ?? DEFAULT_SERVER_CATEGORIES
 }
 
-// Set Selected Categories
 export async function setSelectedCategories(stateManager: SourceStateManager, selectedCategories: string[]) {
     await stateManager.store(SELECTED_CATEGORIES_KEY, selectedCategories)
 }
 
-// Get Selected Categories
 export async function getSelectedCategories(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SELECTED_CATEGORIES_KEY) as string[] | undefined) ?? DEFAULT_SELECTED_CATEGORIES;
 }
 
 export function getCategoriesIds(categories: Record<string, tachiCategory>) {
     let categoryIds: string[] = [];
-
     Object.values(categories).forEach(category => {
         categoryIds.push(JSON.stringify(category.id))
     })
+
     return categoryIds
 }
-export function getCategoryFromId(categories: Record<string, tachiCategory>, id: string) : tachiCategory{
-    const default_category : tachiCategory = {
-        id: 0,
-        order: 0,
-        name: "Default",
-        default: true,
-        size: 0,
-        includeInUpdate: "EXCLUDE",
-        meta: {
-            "additionalProp1": "string",
-            "additionalProp2": "string",
-            "additionalProp3": "string"
-        }
-    }
-    return categories[id] ?? default_category
+
+export function getCategoryFromId(categories: Record<string, tachiCategory>, id: string): tachiCategory {
+    return categories[id] ?? DEFAULT_SERVER_CATEGORY
 }
 
 export function getCategoryNameFromId(categories: Record<string, tachiCategory>, id: string) {
     let categoryName = ""
-
     Object.values(categories).forEach(category => {
         if (JSON.stringify(category.id) == id) {
             categoryName = category.name
@@ -380,12 +357,11 @@ export function getCategoryNameFromId(categories: Record<string, tachiCategory>,
 // ! Categories End
 
 // ! Sources Start
-// Fetch Sources -- get with a fetch
+// Fetch Sources from server
 export async function fetchServerSources(stateManager: SourceStateManager, requestManager: RequestManager) {
     let sources: Record<string, tachiSources> = {};
 
     const fetchedSources = await makeRequest(stateManager, requestManager, "source/list")
-
     fetchedSources.forEach((source: tachiSources) => {
         sources[source.id] = source
     });
@@ -393,29 +369,24 @@ export async function fetchServerSources(stateManager: SourceStateManager, reque
     return sources
 }
 
-// Set Sources
 export async function setServerSources(stateManager: SourceStateManager, sources: Record<string, tachiSources>) {
     await stateManager.store(SERVER_SOURCES_KEY, sources);
 }
 
-// Get Sources
 export async function getServerSources(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_SOURCES_KEY) as Record<string, tachiSources> | undefined) ?? DEFAULT_SERVER_SOURCES
 }
 
-// Set Selected Sources
 export async function setSelectedSources(stateManager: SourceStateManager, selectedSources: string[]) {
     await stateManager.store(SELECTED_SOURCES_KEY, selectedSources)
 }
 
-// Get Selected Sources
 export async function getSelectedSources(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SELECTED_SOURCES_KEY) as string[] | undefined) ?? DEFAULT_SELECTED_SOURCES
 }
 
 export function getSourcesIds(sources: Record<string, tachiSources>) {
     let sourceIds: string[] = [];
-
     Object.values(sources).forEach(source => {
         sourceIds.push(source.id)
     })
@@ -423,24 +394,12 @@ export function getSourcesIds(sources: Record<string, tachiSources>) {
     return sourceIds
 }
 
-export function getSourceFromId(sources: Record<string, tachiSources>, id: string) : tachiSources{
-    const default_category : tachiSources = {
-        id: "0",
-        name: "Local source",
-        lang: "localsourcelang",
-        iconUrl: "/api/v1/extension/icon/localSource",
-        supportsLatest: true,
-        isConfigurable: false,
-        isNsfw: false,
-        displayName: "Local source"
-    }
-
-    return sources[id] ?? default_category
+export function getSourceFromId(sources: Record<string, tachiSources>, id: string): tachiSources {
+    return sources[id] ?? DEFAULT_SERVER_SOURCE
 }
 
 export function getSourceNameFromId(sources: Record<string, tachiSources>, id: string) {
     let sourceName = ""
-
     Object.values(sources).forEach(source => {
         if (source.id === id) {
             sourceName = source.displayName
@@ -449,34 +408,9 @@ export function getSourceNameFromId(sources: Record<string, tachiSources>, id: s
 
     return sourceName
 }
-
 // ! Sources End
 
 // ! Homepage Settings Start
-
-export const DEFAULT_MANGA_PER_ROW = 10;
-export const DEFAULT_UPDATED_ROW_STATE = true
-export const DEFAULT_CATEGORY_ROW_STATE = true
-export const DEFAULT_SOURCE_ROW_STATE = true
-export const DEFAULT_UPDATED_ROW_STYLE = ["singleRowNormal"]
-export const DEFAULT_CATEGORY_ROW_STYLE = ["singleRowNormal"]
-export const DEFAULT_SOURCE_ROW_STYLE = ["singleRowNormal"]
-
-export const MANGA_PER_ROW_KEY = "mangaPerRow"
-export const UPDATED_ROW_STATE_KEY = "updatedRowState"
-export const CATEGORY_ROW_STATE_KEY = "categoryRowState"
-export const SOURCE_ROW_STATE_KEY = "sourceRowState"
-export const UPDATED_ROW_STYLE_KEY = "updatedRowStyle"
-export const CATEGORY_ROW_STYLE_KEY = "categoryRowStyle"
-export const SOURCE_ROW_STYLE_KEY = "sourceRowStyle"
-
-export const rowStyles : {[key: string]: HomeSectionType}= {
-    "singleRowNormal": HomeSectionType.singleRowNormal,
-    "singleRowLarge": HomeSectionType.singleRowLarge,
-    "featured": HomeSectionType.featured,
-    "doubleRow": HomeSectionType.doubleRow
-}
-
 export function styleResolver(style: string): string {
     switch (style) {
         case "singleRowNormal":
