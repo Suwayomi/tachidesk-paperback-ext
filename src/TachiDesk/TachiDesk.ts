@@ -53,7 +53,7 @@ export const TachiDeskInfo: SourceInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.0-beta',
+    version: '2.0',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: ContentRating.ADULT,
     sourceTags: [
