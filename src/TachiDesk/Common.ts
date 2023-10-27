@@ -293,11 +293,7 @@ export async function getPassword(stateManager: SourceStateManager) {
 // ! Requests
 export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data: Record<string, string> = {}, headers: Record<string, string> = {}) {
     const serverAPI = await getServerAPI(stateManager)
-    const authEnabled = await getAuthState(stateManager);
 
-    if (authEnabled) {
-        headers['Authorization'] = await getAuthString(stateManager);
-    }
     const request = App.createRequest({
         url: serverAPI + apiEndpoint,
         method,

@@ -14,7 +14,8 @@ import {
     SourceInfo,
     SourceIntents,
     SourceManga,
-    TagSection
+    TagSection,
+    Request
 } from "@paperback/types"
 
 import { 
@@ -25,6 +26,8 @@ import {
 
 import {  
     fetchServerCategories, 
+    getAuthState, 
+    getAuthString, 
     getCategoryFromId, 
     getCategoryNameFromId, 
     getCategoryRowState, 
@@ -69,7 +72,24 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
     stateManager = App.createSourceStateManager();
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
-        requestTimeout: 20000
+        requestTimeout: 20000,
+        interceptor: {
+            interceptRequest: async (request: Request) => {
+                const authEnabled = await getAuthState(this.stateManager);
+
+                if (authEnabled) {
+                    request.headers = {
+                        ...request.headers,
+                        authorization: await getAuthString(this.stateManager)
+                    }
+                }
+
+                return request
+            },
+            interceptResponse: async (response: Response): Promise<Response> => {
+                return response
+            }
+        }
     })
 
     // Variable used for share URL
