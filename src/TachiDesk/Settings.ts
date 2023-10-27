@@ -7,6 +7,7 @@ import {
 } from "@paperback/types"
 
 import {
+    DEFAULT_SERVER_SOURCE,
     DEFAULT_SERVER_URL,
     fetchServerCategories,
     fetchServerSources,
@@ -15,11 +16,15 @@ import {
     getCategoryNameFromId,
     getCategoryRowState,
     getCategoryRowStyle,
+    getLanguageCodes,
+    getLanguageName,
     getMangaPerRow,
     getPassword,
     getSelectedCategories,
+    getSelectedLanguages,
     getSelectedSources,
     getServerCategories,
+    getServerLanguages,
     getServerSources,
     getServerURL,
     getSourceNameFromId,
@@ -37,6 +42,7 @@ import {
     setMangaPerRow,
     setPassword,
     setSelectedCategories,
+    setSelectedLanguages,
     setSelectedSources,
     setServerCategories,
     setServerSources,
@@ -199,9 +205,11 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                                 allowsMultiselect: false,
                                 value: App.createDUIBinding({
                                     async get() {
+                                        console.log("get: " + JSON.stringify(await getUpdatedRowStyle(stateManager)))
                                         return await getUpdatedRowStyle(stateManager)
                                     },
                                     async set(newValue) {
+                                        console.log("set: " + JSON.stringify(newValue))
                                         await setUpdatedRowStyle(stateManager, newValue)
                                     }
                                 }),
@@ -282,6 +290,7 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                                     return styleResolver(option); 
                                 },
                             }),
+                            await languageSettings(stateManager),
                             await sourceSettings(stateManager,requestManager)
                         ]
                     })
@@ -294,19 +303,31 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
 // Category selection
 export const categoriesSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
     let serverCategories = await getServerCategories(stateManager);
+    let missedSelected = []
     const serverURL = await getServerURL(stateManager);
 
     // fetch categories only when the URL has been set
     if (serverURL !== DEFAULT_SERVER_URL){
-        serverCategories = await fetchServerCategories(stateManager,requestManager)
-        setServerCategories(stateManager, serverCategories)
+        const fetchedCategories = await fetchServerCategories(stateManager,requestManager)
+        if(JSON.stringify(fetchedCategories) !== JSON.stringify(serverCategories)){
+            serverCategories = fetchedCategories
+            setServerCategories(stateManager, serverCategories)
+        }
+    }
+
+    // Gets the selected categories, checks if they're in the options. If they're not, add them to a list added to the options later
+    // Ensures that user can delete an old option.
+    for (const id of await getSelectedCategories(stateManager)){
+        if(!(getCategoriesIds(serverCategories).includes(id))){
+            missedSelected.push(id)
+        }
     }
 
     return App.createDUISelect({
         id: "CategoriesSelection",
         label: "Categories",
         allowsMultiselect: true,
-        options: getCategoriesIds(serverCategories),
+        options: getCategoriesIds(serverCategories).concat(missedSelected),
         labelResolver: async (option) => {
             return getCategoryNameFromId(serverCategories, option) ?? ""
         },
@@ -324,19 +345,42 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
 // Source selection
 export const sourceSettings = async (stateManager : SourceStateManager, requestManager : RequestManager) : Promise<DUISelect> => {
     let serverSources = await getServerSources(stateManager);
+    let missedSelected = []
     const serverURL = await getServerURL(stateManager);
+    const languages = await getSelectedLanguages(stateManager)
 
-    // only fetches when url has been set
+
+    // only fetches when url has been set, only sets the fetched when the old record is different 
     if (serverURL !== DEFAULT_SERVER_URL){
-        serverSources = await fetchServerSources(stateManager, requestManager)
-        setServerSources(stateManager, serverSources)
+        const fetchedServerSources = await fetchServerSources(stateManager, requestManager)
+        if (JSON.stringify(fetchedServerSources) !== JSON.stringify(serverSources)){
+            serverSources = fetchedServerSources
+            setServerSources(stateManager, serverSources)
+        }
     }
 
+    // Clean sources based on selected languages
+    // getSourcesIds(serverSources).concat(missedSelected)
+    const options = Object.keys(serverSources).filter((key) => {
+        const source = serverSources[key] ?? DEFAULT_SERVER_SOURCE
+        return languages.includes(source.lang)
+    })
+
+    // Gets the selected sources, checks if they're in the options. If they're not, add them to a list added to the options later
+    // Ensures that user can delete an old option.
+    for (const id of options.concat(await getSelectedSources(stateManager))){
+        console.log(id + ": " + JSON.stringify(getSourcesIds(serverSources).includes(id)))
+        if(!(getSourcesIds(serverSources).includes(id))){
+            missedSelected.push(id)
+        }
+    }
+    console.log(JSON.stringify(options))
+    console.log(JSON.stringify(missedSelected))
     return App.createDUISelect({
         id: "SourcesSelection",
         label: "Sources",
         allowsMultiselect: true,
-        options: getSourcesIds(serverSources),
+        options: options.concat(missedSelected),
         labelResolver: async (option) => {
             return getSourceNameFromId(serverSources, option)
         },
@@ -348,6 +392,26 @@ export const sourceSettings = async (stateManager : SourceStateManager, requestM
                 await setSelectedSources(stateManager, newValue)
             }
         })
+    })
+}
+
+export const languageSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
+    return App.createDUISelect({
+        id: "languageSelection",
+        label: "Languages",
+        allowsMultiselect: true,
+        options: getLanguageCodes().concat(await getServerLanguages(stateManager)),
+        labelResolver: async (option) => {
+            return getLanguageName(option)
+        },
+        value: App.createDUIBinding({
+            async get() {
+                return await getSelectedLanguages(stateManager)
+            },
+            async set(newValue) {
+                await setSelectedLanguages(stateManager, newValue)
+            }        
+        }),
     })
 }
 

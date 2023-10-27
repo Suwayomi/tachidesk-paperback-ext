@@ -28,6 +28,8 @@ export const SELECTED_CATEGORIES_KEY = "selectedCategories";
 export const SERVER_SOURCES_KEY = "serverSources";
 export const SELECTED_SOURCES_KEY = "selectedSources";
 
+export const SELECTED_LANGUAGES_KEY = "selectedLanguages"
+
 export const MANGA_PER_ROW_KEY = "mangaPerRow"
 export const UPDATED_ROW_STATE_KEY = "updatedRowState"
 export const CATEGORY_ROW_STATE_KEY = "categoryRowState"
@@ -76,6 +78,8 @@ export const DEFAULT_SERVER_SOURCES: Record<string, tachiSources> = {
 }
 export const DEFAULT_SELECTED_SOURCES = ["0"]
 
+export const DEFAULT_SELECTED_LANGUAGES = ["localsourcelang", "en"]
+
 export const DEFAULT_MANGA_PER_ROW = 10;
 export const DEFAULT_UPDATED_ROW_STATE = true
 export const DEFAULT_CATEGORY_ROW_STATE = true
@@ -83,7 +87,50 @@ export const DEFAULT_SOURCE_ROW_STATE = true
 export const DEFAULT_UPDATED_ROW_STYLE = ["singleRowNormal"]
 export const DEFAULT_CATEGORY_ROW_STYLE = ["singleRowNormal"]
 export const DEFAULT_SOURCE_ROW_STYLE = ["singleRowNormal"]
+
 export const rowStyles = ["singleRowNormal", "singleRowLarge", "featured", "doubleRow"]
+export const languages: Record<string, string> = {
+    'ar': 'اَلْعَرَبِيَّةُ', // Arabic
+    'bg': 'български', // Bulgarian
+    'bn': 'বাংলা', // Bengali
+    'ca': 'Català', // Catalan
+    'cs': 'Čeština', // Czech
+    'da': 'Dansk', // Danish
+    'de': 'Deutsch', // German
+    'en': 'English', // English
+    'es': 'Español', // Spanish
+    'es-419': 'Español (Latinoamérica)', // Spanish (Latin American)
+    'fa': 'فارسی', // Farsi
+    'fi': 'Suomi', // Finnish
+    'fr': 'Français', // French
+    'he': 'עִבְרִית', // Hebrew
+    'hi': 'हिन्दी', // Hindi
+    'hu': 'Magyar', // Hungarian
+    'id': 'Indonesia', // Indonesian
+    'it': 'Italiano', // Italian
+    'ja': '日本語', // Japanese
+    'ko': '한국어', // Korean
+    'lt': 'Lietuvių', // Lithuanian
+    'mn': 'монгол', // Mongolian
+    'ms': 'Melayu', // Malay
+    'my': 'မြန်မာဘာသာ', // Burmese
+    'nl': 'Nederlands', // Dutch
+    'no': 'Norsk', // Norwegian
+    'pl': 'Polski', // Polish
+    'pt': 'Português', // Portuguese
+    'pt-BR': 'Português (Brasil)', // Portuguese (Brazilian)
+    'ro': 'Română', // Romanian
+    'ru': 'Pусский', // Russian
+    'sr': 'Cрпски', // Serbian
+    'sv': 'Svenska', // Swedish
+    'th': 'ไทย', // Thai
+    'tl': 'Filipino', // Tagalog
+    'tr': 'Türkçe', // Turkish
+    'uk': 'Yкраї́нська', // Ukrainian
+    'vi': 'Tiếng Việt', // Vietnamese
+    'zh-Hans': '中文 (简化字)', // Chinese (Simplified)
+    'zh-Hant': '中文 (繁體字)', // Chinese (Traditional)
+}
 
 // ! Query Interfaces Start
 // interface categories
@@ -186,7 +233,7 @@ export async function resetSettings(stateManager: SourceStateManager) {
 
 // ! Server URL start
 
-export async function setServerURL(stateManager: SourceStateManager, url: String) {
+export async function setServerURL(stateManager: SourceStateManager, url: string) {
     url = url == "" ? DEFAULT_SERVER_URL : url
     url = url.slice(-1) === '/' ? url : url + "/" // Verified / at the end of URL
     await stateManager.store(SERVER_URL_KEY, url)
@@ -345,7 +392,7 @@ export function getCategoryFromId(categories: Record<string, tachiCategory>, id:
 }
 
 export function getCategoryNameFromId(categories: Record<string, tachiCategory>, id: string) {
-    let categoryName = ""
+    let categoryName = "OLD ENTRY OR ERROR"
     Object.values(categories).forEach(category => {
         if (JSON.stringify(category.id) == id) {
             categoryName = category.name
@@ -399,7 +446,7 @@ export function getSourceFromId(sources: Record<string, tachiSources>, id: strin
 }
 
 export function getSourceNameFromId(sources: Record<string, tachiSources>, id: string) {
-    let sourceName = ""
+    let sourceName = "OLD ENTRY OR ERROR"
     Object.values(sources).forEach(source => {
         if (source.id === id) {
             sourceName = source.displayName
@@ -482,3 +529,35 @@ export async function getSourceRowStyle(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SOURCE_ROW_STYLE_KEY) as string[] | undefined) ?? DEFAULT_SOURCE_ROW_STYLE;
 }
 // ! Homepage Settings End
+
+export async function getServerLanguages(stateManager : SourceStateManager){
+    const serverSources = await getServerSources(stateManager)
+    const serverLanguages = Object.values(serverSources).map((source) => source.lang)
+    const languages = getLanguageCodes()
+
+    let missedLanguages = []
+
+    for (const language of serverLanguages){
+        if(!(languages.includes(language))){
+            missedLanguages.push(language)
+        }
+    }
+
+    return missedLanguages
+}
+
+export function getLanguageCodes(){
+    return Object.keys(languages)
+}
+
+export function getLanguageName(languageCode : string) : string{
+    return languages[languageCode] ?? languageCode
+}
+
+export async function setSelectedLanguages(stateManager: SourceStateManager, languages: string[]){
+    await stateManager.store(SELECTED_LANGUAGES_KEY, languages)
+}
+
+export async function getSelectedLanguages(stateManager: SourceStateManager){
+    return (await stateManager.retrieve(SELECTED_LANGUAGES_KEY) as string[] | undefined) ?? DEFAULT_SELECTED_LANGUAGES
+}
