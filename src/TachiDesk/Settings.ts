@@ -8,9 +8,6 @@ import {
 
 import {
     DEFAULT_SERVER_SOURCE,
-    DEFAULT_SERVER_URL,
-    fetchServerCategories,
-    fetchServerSources,
     getAuthState,
     getCategoriesIds,
     getCategoryNameFromId,
@@ -44,8 +41,6 @@ import {
     setSelectedCategories,
     setSelectedLanguages,
     setSelectedSources,
-    setServerCategories,
-    setServerSources,
     setServerURL,
     setSourceRowState,
     setSourceRowStyle,
@@ -205,11 +200,9 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
                                 allowsMultiselect: false,
                                 value: App.createDUIBinding({
                                     async get() {
-                                        console.log("get: " + JSON.stringify(await getUpdatedRowStyle(stateManager)))
                                         return await getUpdatedRowStyle(stateManager)
                                     },
                                     async set(newValue) {
-                                        console.log("set: " + JSON.stringify(newValue))
                                         await setUpdatedRowStyle(stateManager, newValue)
                                     }
                                 }),
@@ -348,7 +341,6 @@ export const sourceSettings = async (stateManager: SourceStateManager, requestMa
     // Gets the selected sources, checks if they're in the options. If they're not, add them to a list added to the options later
     // Ensures that user can delete an old option.
     for (const id of options.concat(await getSelectedSources(stateManager))) {
-        console.log(id + ": " + JSON.stringify(getSourcesIds(serverSources).includes(id)))
         if (!(getSourcesIds(serverSources).includes(id))) {
             missedSelected.push(id)
         }
