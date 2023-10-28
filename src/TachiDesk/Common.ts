@@ -63,7 +63,7 @@ export const DEFAULT_SERVER_CATEGORY: tachiCategory = {
 export const DEFAULT_SERVER_CATEGORIES: Record<string, tachiCategory> = { "0": DEFAULT_SERVER_CATEGORY };
 export const DEFAULT_SELECTED_CATEGORIES = ["0"];
 
-export const DEFAULT_SERVER_SOURCE : tachiSources = {
+export const DEFAULT_SERVER_SOURCE: tachiSources = {
     id: "0",
     name: "Local source",
     lang: "localsourcelang",
@@ -228,6 +228,7 @@ export async function resetSettings(stateManager: SourceStateManager) {
     await stateManager.store(UPDATED_ROW_STYLE_KEY, DEFAULT_UPDATED_ROW_STYLE)
     await stateManager.store(CATEGORY_ROW_STYLE_KEY, DEFAULT_CATEGORY_ROW_STYLE)
     await stateManager.store(SOURCE_ROW_STYLE_KEY, DEFAULT_SOURCE_ROW_STYLE)
+    await stateManager.store(SELECTED_LANGUAGES_KEY, DEFAULT_SELECTED_LANGUAGES)
 }
 // ! Reset Settings End
 
@@ -526,15 +527,16 @@ export async function getSourceRowStyle(stateManager: SourceStateManager) {
 }
 // ! Homepage Settings End
 
-export async function getServerLanguages(stateManager : SourceStateManager){
+// ! Languages Settings Start
+export async function getServerLanguages(stateManager: SourceStateManager) {
     const serverSources = await getServerSources(stateManager)
     const serverLanguages = Object.values(serverSources).map((source) => source.lang)
     const languages = getLanguageCodes()
 
     let missedLanguages = []
 
-    for (const language of serverLanguages){
-        if(!(languages.includes(language))){
+    for (const language of serverLanguages) {
+        if (!(languages.includes(language))) {
             missedLanguages.push(language)
         }
     }
@@ -542,18 +544,38 @@ export async function getServerLanguages(stateManager : SourceStateManager){
     return missedLanguages
 }
 
-export function getLanguageCodes(){
+export function getLanguageCodes() {
     return Object.keys(languages)
 }
 
-export function getLanguageName(languageCode : string) : string{
+export function getLanguageName(languageCode: string): string {
     return languages[languageCode] ?? languageCode
 }
 
-export async function setSelectedLanguages(stateManager: SourceStateManager, languages: string[]){
+export async function setSelectedLanguages(stateManager: SourceStateManager, languages: string[]) {
     await stateManager.store(SELECTED_LANGUAGES_KEY, languages)
 }
 
-export async function getSelectedLanguages(stateManager: SourceStateManager){
+export async function getSelectedLanguages(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SELECTED_LANGUAGES_KEY) as string[] | undefined) ?? DEFAULT_SELECTED_LANGUAGES
+}
+// ! Languages settings end
+
+export async function v1Migration(stateManager: SourceStateManager) {
+    const serverAddress = await stateManager.retrieve("server_address")
+    const selectedCategories = await stateManager.retrieve("selected_category")
+    const selectedSources = await stateManager.retrieve("selected_sources")
+
+    if (serverAddress) {
+        await setServerURL(stateManager, serverAddress)
+        await stateManager.store("server_address", undefined)
+    }
+    if (selectedCategories) {
+        await stateManager.store("selected_category", undefined)
+        await setSelectedCategories(stateManager, selectedCategories)
+    }
+    if (selectedSources) {
+        await stateManager.store("selected_sources", undefined)
+        await setSelectedSources(stateManager, selectedSources)
+    }
 }

@@ -304,16 +304,6 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
 export const categoriesSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
     let serverCategories = await getServerCategories(stateManager);
     let missedSelected = []
-    const serverURL = await getServerURL(stateManager);
-
-    // fetch categories only when the URL has been set
-    if (serverURL !== DEFAULT_SERVER_URL){
-        const fetchedCategories = await fetchServerCategories(stateManager,requestManager)
-        if(JSON.stringify(fetchedCategories) !== JSON.stringify(serverCategories)){
-            serverCategories = fetchedCategories
-            setServerCategories(stateManager, serverCategories)
-        }
-    }
 
     // Gets the selected categories, checks if they're in the options. If they're not, add them to a list added to the options later
     // Ensures that user can delete an old option.
@@ -346,18 +336,7 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
 export const sourceSettings = async (stateManager : SourceStateManager, requestManager : RequestManager) : Promise<DUISelect> => {
     let serverSources = await getServerSources(stateManager);
     let missedSelected = []
-    const serverURL = await getServerURL(stateManager);
     const languages = await getSelectedLanguages(stateManager)
-
-
-    // only fetches when url has been set, only sets the fetched when the old record is different 
-    if (serverURL !== DEFAULT_SERVER_URL){
-        const fetchedServerSources = await fetchServerSources(stateManager, requestManager)
-        if (JSON.stringify(fetchedServerSources) !== JSON.stringify(serverSources)){
-            serverSources = fetchedServerSources
-            setServerSources(stateManager, serverSources)
-        }
-    }
 
     // Clean sources based on selected languages
     // getSourcesIds(serverSources).concat(missedSelected)
@@ -374,8 +353,7 @@ export const sourceSettings = async (stateManager : SourceStateManager, requestM
             missedSelected.push(id)
         }
     }
-    console.log(JSON.stringify(options))
-    console.log(JSON.stringify(missedSelected))
+
     return App.createDUISelect({
         id: "SourcesSelection",
         label: "Sources",

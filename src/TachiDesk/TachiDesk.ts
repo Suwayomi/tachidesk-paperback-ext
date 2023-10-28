@@ -25,7 +25,9 @@ import {
 } from "./Settings";
 
 import {  
+    DEFAULT_SERVER_URL,
     fetchServerCategories, 
+    fetchServerSources, 
     getAuthState, 
     getAuthString, 
     getCategoryFromId, 
@@ -36,6 +38,7 @@ import {
     getSelectedCategories, 
     getSelectedSources, 
     getServerAPI, 
+    getServerCategories, 
     getServerSources, 
     getServerURL, 
     getSourceFromId, 
@@ -46,9 +49,12 @@ import {
     getUpdatedRowStyle, 
     makeRequest, 
     serverUnavailableMangaTiles, 
+    setServerCategories, 
+    setServerSources, 
     tachiChapter, 
     tachiManga,
-    testRequest 
+    testRequest, 
+    v1Migration
 } from "./Common";
 
 export const TachiDeskInfo: SourceInfo = {
@@ -97,6 +103,12 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
     // Settings
     async getSourceMenu(): Promise<DUISection> {
+        
+        // Checks if you need to migrate from v1
+        if(await this.stateManager.retrieve("server_address")){
+            await v1Migration(this.stateManager)
+        }
+
         return App.createDUISection({
             id: "main",
             header: "Source Settings",
@@ -202,6 +214,26 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             });
             sectionCallback(section);
             return;
+        }
+
+        // Fetches sources and categories since it runs every time anyway
+        const serverURL = await getServerURL(this.stateManager);
+        const serverSources = await getServerSources(this.stateManager);
+        const serverCategories = await getServerCategories(this.stateManager);
+
+        // only fetches when url has been set, only sets the fetched when the old record is different 
+        if (serverURL !== DEFAULT_SERVER_URL){
+            fetchServerSources(this.stateManager, this.requestManager).then((response) => {
+                if (JSON.stringify(response) !== JSON.stringify(serverSources)){
+                    setServerSources(this.stateManager, response)
+                }
+            })
+            
+            fetchServerCategories(this.stateManager,this.requestManager).then((response) => {
+                if(JSON.stringify(response) !== JSON.stringify(serverCategories)){
+                    setServerCategories(this.stateManager, response)
+                }
+            })
         }
 
         // Gets the settings values to set the type of rows
