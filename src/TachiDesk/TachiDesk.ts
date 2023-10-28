@@ -1,44 +1,74 @@
 import {
+    BadgeColor,
     Chapter,
     ChapterDetails,
-    PagedResults,
-    SourceManga,
-    HomeSection,
-    SearchRequest,
-    SourceInfo,
-    ContentRating,
-    TagSection,
-    HomeSectionType,
     ChapterProviding,
-    SourceIntents,
+    ContentRating,
     DUISection,
-    SearchResultsProviding,
     HomePageSectionsProviding,
-    BadgeColor,
-} from '@paperback/types'
+    HomeSection,
+    HomeSectionType,
+    PagedResults,
+    SearchRequest,
+    SearchResultsProviding,
+    SourceInfo,
+    SourceIntents,
+    SourceManga,
+    TagSection,
+    Request,
+    Response
+} from "@paperback/types"
 
 import {
-    TachiAPIClass,
-    TachiCategoriesClass,
-    TachiSourcesClass,
-    serverUnavailableMangaTiles
-} from './Common';
-
-import {
+    HomepageSettings,
+    categoriesSettings,
+    languageSettings,
     resetSettingsButton,
-    selectedCategoriesSettings,
-    selectedSourcesSettings,
-    serverAddressSettings
-} from './Settings';
+    serverAddressSettings,
+    sourceSettings,
+} from "./Settings";
+
+import {
+    DEFAULT_SERVER_URL,
+    fetchServerCategories,
+    fetchServerSources,
+    getAuthState,
+    getAuthString,
+    getCategoryFromId,
+    getCategoryNameFromId,
+    getCategoryRowState,
+    getCategoryRowStyle,
+    getMangaPerRow,
+    getSelectedCategories,
+    getSelectedSources,
+    getServerAPI,
+    getServerCategories,
+    getServerSources,
+    getServerURL,
+    getSourceFromId,
+    getSourceNameFromId,
+    getSourceRowState,
+    getSourceRowStyle,
+    getUpdatedRowState,
+    getUpdatedRowStyle,
+    makeRequest,
+    serverUnavailableMangaTiles,
+    setServerCategories,
+    setServerSources,
+    tachiChapter,
+    tachiManga,
+    testRequest,
+    v1Migration
+} from "./Common";
 
 export const TachiDeskInfo: SourceInfo = {
     author: 'ofelizestevez & Alles',
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '1.1',
+    version: '2.0',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
-    contentRating: ContentRating.EVERYONE,
+    contentRating: ContentRating.ADULT,
     sourceTags: [
         {
             text: "Self-hosted",
@@ -49,112 +79,101 @@ export const TachiDeskInfo: SourceInfo = {
 }
 
 export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, SearchResultsProviding {
-
-    // Paperback required defaults
-    // Statemanager saves states for the extension (like localstorage api)
-    // Request manager makes HTTP requests
     stateManager = App.createSourceStateManager();
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 20000,
-    });
+        interceptor: {
+            interceptRequest: async (request: Request) => {
+                const authEnabled = await getAuthState(this.stateManager);
 
-    // Tachidesk essentials. Packages up code neatly so it could be used in multiple places cleanly
-    // TachiAPI handles the server address and making requests
-    // TachiSources and TachiCategories handle library items (sources, categories)
-    tachiAPI = new TachiAPIClass().init(this.stateManager);
-    tachiSources = new TachiSourcesClass();
-    tachiCategories = new TachiCategoriesClass();
+                if (authEnabled) {
+                    request.headers = {
+                        ...request.headers,
+                        authorization: await getAuthString(this.stateManager)
+                    }
+                }
 
-    // Variable used for getMangaShareUrl. Updated by getChapters, meaning that it updates the server address everytime the user opens a manga
-    // Technically it doesn't have to be updated this often, thus it has room for improvement
+                return request
+            },
+            interceptResponse: async (response: Response): Promise<Response> => {
+                return response
+            }
+        }
+    })
+
+    // Variable used for share URL
     serverAddress = ""
 
-    // Provides the settings for the extension
+    // Settings
     async getSourceMenu(): Promise<DUISection> {
-        const tachiAPI = await this.tachiAPI;
         return App.createDUISection({
             id: "main",
             header: "Source Settings",
+            footer: "IMPORTANT NOTE: settings are more stable if you wait for your homepage section to load.",
             isHidden: false,
             rows: async () => [
-                serverAddressSettings(this.stateManager, this.requestManager, tachiAPI),
-                await selectedSourcesSettings(this.stateManager, this.requestManager, tachiAPI, this.tachiSources),
-                await selectedCategoriesSettings(this.stateManager, this.requestManager, tachiAPI, this.tachiCategories),
-                await resetSettingsButton(this.stateManager, tachiAPI, this.tachiSources, this.tachiCategories),
+                serverAddressSettings(this.stateManager, this.requestManager),
+                HomepageSettings(this.stateManager, this.requestManager),
+                await categoriesSettings(this.stateManager, this.requestManager),
+                await languageSettings(this.stateManager),
+                await sourceSettings(this.stateManager, this.requestManager),
+                await resetSettingsButton(this.stateManager)
             ]
         })
     }
 
-    // Provides share url for manga share button, if statement seems to not work
+    // share URL
     getMangaShareUrl(mangaId: string): string {
         if (this.serverAddress != "") {
-            return this.serverAddress + "/manga/" + mangaId
+            return this.serverAddress + "manga/" + mangaId
         }
         return ""
     }
 
-    // Provides paperback with all of the details of the manga
+    // Manga info -> uses TachiManga interface
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        const tachiAPI = await this.tachiAPI;
-
-        const manga = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId)
-        // throw new Error(this.serverAddress)
-        const image = await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl;
-
-        const artist = manga.artist;
-        const author = manga.author;
-        const desc = manga.description;
-        const status = manga.status;
-        const titles = [manga.title];
+        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
         const tags: [TagSection] = [
             App.createTagSection({
-                id: "0", label: "genres", tags:
-                    manga.genre.map((tag: string) => App.createTag({
-                        id: tag,
-                        label: tag
-                    }))
-            }),
-        ];
+                id: "0",
+                label: "genres",
+                tags: manga.genre.map((tag: string) => App.createTag({
+                    id: tag,
+                    label: tag
+                }))
+            })
+        ]
 
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo({
-                titles,
-                image,
-                author,
-                artist,
-                desc,
-                status,
+                titles: [manga.title],
+                image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                author: manga.author,
+                artist: manga.artist,
+                desc: manga.description,
+                status: manga.status,
                 tags
             })
         })
     }
 
-    // Provides paperback with list of chapters, updates this.serverAddress
+    // Chapter list, sets the share URl address
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const tachiAPI = await this.tachiAPI
-
-        const chaptersData = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapters")
-        this.serverAddress = await tachiAPI.getServerAddress(this.stateManager)
+        const chaptersData: tachiChapter[] = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/chapters")
+        this.serverAddress = await getServerURL(this.stateManager)
 
         const chapters: Chapter[] = []
 
-
         for (const chapter of chaptersData) {
-            const id = String(chapter.index);
-            const chapNum = parseFloat(chapter.chapterNumber);
-            const name = chapter.name;
-            const time = new Date(chapter.uploadDate);
-            const sortingIndex = chapter.index;
-
             chapters.push(
                 App.createChapter({
-                    id,
-                    name,
-                    chapNum,
-                    time,
-                    sortingIndex
+                    id: chapter.index.toString(),
+                    name: chapter.name,
+                    chapNum: chapter.chapterNumber,
+                    time: new Date(chapter.uploadDate),
+                    sortingIndex: chapter.index
                 })
             )
         }
@@ -162,15 +181,16 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         return chapters
     }
 
-    // Called when user opens a manga. It's used to get the page links
+    // Provides pages for chapter
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const tachiAPI = await this.tachiAPI
+        const apiURL = await getServerAPI(this.stateManager)
+        const chapterData: tachiChapter = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/chapter/" + chapterId)
 
-        const chapterResponse = await tachiAPI.makeRequest(this.requestManager, "/manga/" + mangaId + "/chapter/" + chapterId)
         const pages: string[] = []
 
-        for (const pageIndex of Array(chapterResponse.pageCount).keys()) {
-            pages.push(tachiAPI.getBaseURL() + "/manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex)
+        // Tachidesk uses page count, so for keys makes it easy to provide the links
+        for (const pageIndex of Array(chapterData.pageCount).keys()) {
+            pages.push(apiURL + "manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex)
         }
 
         return App.createChapterDetails({
@@ -180,122 +200,153 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         })
     }
 
-    // Builds the homepage sections. It handles "Updated", "Categories", and "Sources" all by itself.
-    // Could be divided into multiple functions.
+    // Homepage sections (updated, library categories, sources)
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const promises: Promise<void>[] = []
         const sections = []
-        const tachiAPI = await this.tachiAPI
 
-        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI)
-        const tachiCategories = await this.tachiCategories.init(this.stateManager, this.requestManager, tachiAPI)
-
-        // If we get a bad request, it will give us a server error manga tile.
-        if (tachiSources instanceof Error) {
-            const section = App.createHomeSection({
-                id: "unset",
-                title: "Server Error",
-                containsMoreItems: false,
-                type: HomeSectionType.singleRowNormal,
-                items: serverUnavailableMangaTiles()
-            });
-            sectionCallback(section);
-            return;
+        // Checks if you need to migrate from v1
+        if (await this.stateManager.retrieve("server_address")) {
+            await v1Migration(this.stateManager)
         }
-        if (tachiCategories instanceof Error) {
+
+        // Error Checking here!!!
+        if (await testRequest(this.stateManager, this.requestManager) instanceof Error) {
             const section = App.createHomeSection({
                 id: "unset",
                 title: "Server Error",
                 containsMoreItems: false,
-                type: HomeSectionType.singleRowNormal,
+                type: "singleRowNormal",
                 items: serverUnavailableMangaTiles()
             });
             sectionCallback(section);
             return;
         }
 
-        // Last test to ensure that we can connect to the server
-        if ((await this.tachiAPI).makeRequest(this.requestManager, "/settings/about") instanceof Error) {
-            const section = App.createHomeSection({
-                id: "unset",
-                title: "Server Error",
-                containsMoreItems: false,
-                type: HomeSectionType.singleRowNormal,
-                items: serverUnavailableMangaTiles()
-            });
-            sectionCallback(section);
-            return;
+        // Fetches sources and categories since it runs every time anyway
+        const serverURL = await getServerURL(this.stateManager);
+        const serverSources = await getServerSources(this.stateManager);
+        const serverCategories = await getServerCategories(this.stateManager);
+
+        // only fetches when url has been set, only sets the fetched when the old record is different 
+        if (serverURL !== DEFAULT_SERVER_URL) {
+            promises.push(
+                fetchServerSources(this.stateManager, this.requestManager).then((response) => {
+                    if (JSON.stringify(response) !== JSON.stringify(serverSources)) {
+                        setServerSources(this.stateManager, response)
+                    }
+                })
+            )
+
+            promises.push(
+                fetchServerCategories(this.stateManager, this.requestManager).then((response) => {
+                    if (JSON.stringify(response) !== JSON.stringify(serverCategories)) {
+                        setServerCategories(this.stateManager, response)
+                    }
+                })
+            )
         }
 
-        // Updated featured Section
-        sections.push({
-            section: App.createHomeSection({
-                id: "updated",
-                title: "Last Updated",
-                containsMoreItems: true,
-                type: HomeSectionType.singleRowNormal
-            }),
-            request: App.createRequest({
-                url: tachiAPI.getBaseURL() + "/update/recentChapters/0",
-                method: "GET"
-            }),
-            subtitle: "",
-            type: "update"
-        })
+        // Gets the settings values to set the type of rows
+        const mangaPerRow = await getMangaPerRow(this.stateManager);
+        const updatedRowState = await getUpdatedRowState(this.stateManager);
+        const categoryRowState = await getCategoryRowState(this.stateManager);
+        const sourceRowState = await getSourceRowState(this.stateManager);
+        const updatedRowStyle = (await getUpdatedRowStyle(this.stateManager))[0];
+        const categoryRowStyle = (await getCategoryRowStyle(this.stateManager))[0];
+        const sourceRowStyle = (await getSourceRowStyle(this.stateManager))[0];
 
-        // Category Sections
-        for (const categoryId of await tachiCategories.getSelectedCategories(this.stateManager)) {
+        // Push Sections
+        if (updatedRowState) {
             sections.push({
                 section: App.createHomeSection({
-                    id: "category-" + categoryId,
-                    title: tachiCategories.getSelectedCategoryFromId(categoryId.toString()),
+                    id: "updated",
+                    title: "Recently Updated",
                     containsMoreItems: true,
-                    type: HomeSectionType.singleRowNormal
+                    type: HomeSectionType[updatedRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                 }),
                 request: App.createRequest({
-                    url: tachiAPI.getBaseURL() + "/category/" + categoryId,
+                    url: (await getServerAPI(this.stateManager)) + "update/recentChapters/0",
                     method: "GET"
                 }),
-                subtitle: "",
-                type: "category"
+                responseArray: "page", //Refers to array of manga being inside the response's page key
             })
         }
+        if (categoryRowState) {
+            const serverCategories = await fetchServerCategories(this.stateManager, this.requestManager)
+            const selectedCategories: Array<string> = await getSelectedCategories(this.stateManager)
 
-        // Source Sections
-        for (const sourceId of await tachiSources.getSelectedSources(this.stateManager)) {
-            sections.push({
-                section: App.createHomeSection({
-                    id: "popular-" + sourceId,
-                    title: tachiSources.getSourceNameFromId(sourceId) + " Popular",
-                    containsMoreItems: true,
-                    type: HomeSectionType.singleRowNormal
-                }),
-                request: App.createRequest({
-                    url: tachiAPI.getBaseURL() + "/source/" + sourceId + "/popular/1",
-                    method: "GET"
-                }),
-                subtitle: tachiSources.getSourceNameFromId(sourceId as string),
-                type: "source"
-            })
+            // Gets the information of selected sources to compare their order on the tachidesk server
+            const orderedSelectedCategories = Object.keys(serverCategories)
+                .filter((key) => selectedCategories.includes(key))
+                .sort((a, b) => {
+                    const aOrder = getCategoryFromId(serverCategories, a).order
+                    const bOrder = getCategoryFromId(serverCategories, b).order
 
-            if (tachiSources.getAllSources()[sourceId]["supportsLatest"]) {
+                    if (aOrder < bOrder) {
+                        return -1
+                    }
+                    else if (aOrder > bOrder) {
+                        return 1
+                    }
+                    return 0
+                })
+
+            for (const categoryId of orderedSelectedCategories) {
                 sections.push({
                     section: App.createHomeSection({
-                        id: "latest-" + sourceId,
-                        title: tachiSources.getSourceNameFromId(sourceId) + " Latest",
+                        id: "category-" + categoryId,
+                        title: getCategoryNameFromId(serverCategories, categoryId),
                         containsMoreItems: true,
-                        type: HomeSectionType.singleRowNormal
+                        type: HomeSectionType[categoryRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                     }),
                     request: App.createRequest({
-                        url: tachiAPI.getBaseURL() + "/source/" + sourceId + "/latest/1",
+                        url: (await getServerAPI(this.stateManager)) + "category/" + categoryId,
                         method: "GET"
                     }),
-                    subtitle: tachiSources.getSourceNameFromId(sourceId as string),
-                    type: "source"
+                    responseArray: "root" //Refers to array of manga in the response itself
                 })
             }
         }
-        // run promises
+        if (sourceRowState) {
+            const serverSources = await getServerSources(this.stateManager);
+            const selectedSources = await getSelectedSources(this.stateManager);
+
+            // Adds popular and latest... there might be a way to handle this better (option) but... thats a lot of sources
+            for (const sourceId of selectedSources) {
+                sections.push({
+                    section: App.createHomeSection({
+                        id: "popular-" + sourceId,
+                        title: getSourceNameFromId(serverSources, sourceId) + " (Popular)",
+                        containsMoreItems: true,
+                        type: HomeSectionType[sourceRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
+                    }),
+                    request: App.createRequest({
+                        url: (await getServerAPI(this.stateManager)) + "source/" + sourceId + "/popular/1",
+                        method: "GET"
+                    }),
+                    responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
+                })
+
+                if (getSourceFromId(serverSources, sourceId).supportsLatest) {
+                    sections.push({
+                        section: App.createHomeSection({
+                            id: "latest-" + sourceId,
+                            title: getSourceNameFromId(serverSources, sourceId) + " (Latest)",
+                            containsMoreItems: true,
+                            type: HomeSectionType[sourceRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
+                        }),
+                        request: App.createRequest({
+                            url: (await getServerAPI(this.stateManager)) + "source/" + sourceId + "/latest/1",
+                            method: "GET"
+                        }),
+                        responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
+                    })
+                }
+            }
+        }
+
+        // Run Promises
         for (const section of sections) {
             sectionCallback(section.section)
 
@@ -303,136 +354,120 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 this.requestManager.schedule(section.request, 1).then(async response => {
                     const json = JSON.parse(response.data ?? "")
                     const tiles = []
-                    if (section.type == "update") {
 
-                        for (const manga of json.page.slice(0, 10)) {
-                            tiles.push(
-                                App.createPartialSourceManga({
-                                    title: manga.manga.title,
-                                    mangaId: manga.manga.id.toString(),
-                                    image: await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
-                                    subtitle: ""
-                                })
-                            )
-
-                        }
-                    }
-                    if (section.type == "category") {
-                        for (const manga of json.slice(0, 10)) {
-                            tiles.push(
-                                App.createPartialSourceManga({
-                                    title: manga.title,
-                                    mangaId: manga.id.toString(),
-                                    image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl
-                                })
-                            )
-                        }
-                    }
-                    if (section.type == "source") {
-                        for (const manga of json.mangaList.slice(0, 10)) {
-                            tiles.push(
-                                App.createPartialSourceManga({
-                                    title: manga.title,
-                                    mangaId: manga.id.toString(),
-                                    image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
-                                    subtitle: section.subtitle
-                                })
-                            )
-                        }
+                    // Uses the responseAray to get manga list
+                    let data;
+                    switch (section.responseArray) {
+                        case "page":
+                            data = json.page
+                            break
+                        case "mangaList":
+                            data = json.mangaList
+                            break;
+                        default:
+                            data = json
+                            break;
                     }
 
+                    // Cuts manga list to the first X amount of manga (from settings)
+                    for (const mangaResponse of data.slice(0, mangaPerRow)) {
+                        let manga: tachiManga;
+                        if (section.responseArray === "page") {
+                            manga = mangaResponse.manga
+                        }
+                        else {
+                            manga = mangaResponse
+                        }
+
+                        tiles.push(
+                            App.createPartialSourceManga({
+                                title: manga.title,
+                                mangaId: manga.id.toString(),
+                                image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                            })
+                        )
+                    }
 
                     section.section.items = tiles
                     sectionCallback(section.section)
                 })
             )
         }
-        // awit promise all
+
         await Promise.all(promises)
     }
 
-    // Handles when users click on the "more" button in the homepage.
-    // Currently only set up to work with sources
+    // home sections that contain more items than shown
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
         const sourceId = homepageSectionId.split('-').pop() ?? ""
         const type = homepageSectionId.split("-")[0]
-        const tachiAPI = await this.tachiAPI
-        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI)
 
-        if (tachiSources instanceof Error) {
-            throw tachiSources;
-        }
-
-        const tiles = []
-        let tileData: any;
+        const tiles = [];
         let page;
+        let apiEndpoint: any;
+        let response;
+        let tileData: any;
 
-        // Even if currentpageindex + 10 is bigger than currentpagelength, it will just cut to currentpagelength
+        // uses type of source to determine where to get the manga list and the api link
         switch (type) {
             case "updated":
-                page = metadata?.page ?? 0;
-                tileData = await tachiAPI.makeRequest(this.requestManager, "/update/recentChapters/" + page)
-                for (const manga of tileData.page) {
-                    tiles.push(
-                        App.createPartialSourceManga({
-                            title: manga.manga.title,
-                            mangaId: manga.manga.id.toString(),
-                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.manga.thumbnailUrl,
-                            subtitle: ""
-                        })
-                    )
-                }
-                break;
-            case "category":
-                page = metadata?.page ?? -1;
-                tileData = await tachiAPI.makeRequest(this.requestManager, "/category/" + sourceId)
-                for (const manga of tileData) {
-                    tiles.push(
-                        App.createPartialSourceManga({
-                            title: manga.title,
-                            mangaId: manga.id.toString(),
-                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
-                            subtitle: ""
-                        })
-                    )
-                }
+                page = metadata?.page ?? 0
+                apiEndpoint = "update/recentChapters/" + page;
+                response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                tileData = response.page
                 break
+            case "category":
+                page = metadata?.page ?? undefined
+                apiEndpoint = "category/" + sourceId;
+                response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                tileData = response
+                break
+            case "popular":
+            case "latest":
             default:
-                page = metadata?.page ?? 1;
-                tileData = await tachiAPI.makeRequest(this.requestManager, "/source/" + sourceId + "/" + type + "/" + page)
-                for (const manga of tileData.mangaList) {
-                    tiles.push(
-                        App.createPartialSourceManga({
-                            title: manga.title,
-                            mangaId: manga.id.toString(),
-                            image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
-                            subtitle: ""
-                        })
-                    )
-                }
+                page = metadata?.page ?? 1
+                apiEndpoint = "source/" + sourceId + "/" + type + "/" + page;
+                response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                tileData = response.mangaList
                 break;
         }
 
-        metadata = tileData.hasNextPage ? { page: page + 1 } : undefined
+        // updated list has a manga data and chapter data so have to specify.
+        for (const mangaResponse of tileData) {
+            let manga: tachiManga;
+            if (type === "updated") {
+                manga = mangaResponse.manga
+            }
+            else {
+                manga = mangaResponse
+            }
 
+            tiles.push(
+                App.createPartialSourceManga({
+                    title: manga.title,
+                    mangaId: manga.id.toString(),
+                    image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                })
+            )
+        }
+
+        // Pushes the page number and results along
+        // Eventually we might have to look through this to ensure only 1 distinct manga (updated list allows duups)
+        metadata = response.hasNextPage ? { page: page + 1 } : undefined
         return App.createPagedResults({
             results: tiles,
             metadata: metadata
         })
+
     }
 
-    // Handles search
+    // For now only supports searching sources. I think this has something to do with genres / tags as well but honestly haven't looked into it
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const tachiAPI = await this.tachiAPI
-        const tachiSources = await this.tachiSources.init(this.stateManager, this.requestManager, tachiAPI)
-
-        if (tachiSources instanceof Error) {
-            throw tachiSources;
-        }
-
-        const selectedSources = await tachiSources.getSelectedSources(this.stateManager)
+        const serverSources = await getServerSources(this.stateManager)
+        const selectedSources = await getSelectedSources(this.stateManager)
         const meta_sources: { [key: string]: boolean } = metadata?.sources ?? {}
         const page: number = metadata?.page ?? 1;
+
         const paramsList = [`pageNum=${page}`];
         if (query.title !== undefined && query.title !== "") {
             paramsList.push("searchTerm=" + encodeURIComponent(query.title));
@@ -445,18 +480,17 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         const tiles = []
         for (const source of selectedSources) {
             if (page !== 1) {
-                if (!meta_sources[source.id]) continue
+                if (!meta_sources[source]) continue
             }
 
-            const mangaResults = await tachiAPI.makeRequest(this.requestManager, "/source/" + source + "/search" + paramsString)
-
+            const mangaResults = await makeRequest(this.stateManager, this.requestManager, "source/" + source + "/search" + paramsString)
             for (const manga of mangaResults.mangaList) {
                 tiles.push(
                     App.createPartialSourceManga({
                         title: manga.title,
                         mangaId: String(manga.id),
-                        image: await tachiAPI.getServerAddress(this.stateManager) + manga.thumbnailUrl,
-                        subtitle: tachiSources.getSourceNameFromId(manga.sourceId)
+                        image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                        subtitle: getSourceNameFromId(serverSources, source)
                     })
                 )
             }
