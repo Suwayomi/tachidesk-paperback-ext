@@ -15,13 +15,17 @@ import {
     SourceIntents,
     SourceManga,
     TagSection,
-    Request
+    Request,
+    Response
 } from "@paperback/types"
 
 import {
     HomepageSettings,
+    categoriesSettings,
+    languageSettings,
     resetSettingsButton,
     serverAddressSettings,
+    sourceSettings,
 } from "./Settings";
 
 import {
@@ -103,19 +107,17 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
     // Settings
     async getSourceMenu(): Promise<DUISection> {
-
-        // Checks if you need to migrate from v1
-        if (await this.stateManager.retrieve("server_address")) {
-            await v1Migration(this.stateManager)
-        }
-
         return App.createDUISection({
             id: "main",
             header: "Source Settings",
+            footer: "IMPORTANT NOTE: settings are more stable if you wait for your homepage section to load.",
             isHidden: false,
             rows: async () => [
                 serverAddressSettings(this.stateManager, this.requestManager),
                 HomepageSettings(this.stateManager, this.requestManager),
+                await categoriesSettings(this.stateManager, this.requestManager),
+                await languageSettings(this.stateManager),
+                await sourceSettings(this.stateManager, this.requestManager),
                 await resetSettingsButton(this.stateManager)
             ]
         })
@@ -202,6 +204,11 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const promises: Promise<void>[] = []
         const sections = []
+
+        // Checks if you need to migrate from v1
+        if (await this.stateManager.retrieve("server_address")) {
+            await v1Migration(this.stateManager)
+        }
 
         // Error Checking here!!!
         if (await testRequest(this.stateManager, this.requestManager) instanceof Error) {

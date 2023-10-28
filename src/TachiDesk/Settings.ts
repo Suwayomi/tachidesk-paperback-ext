@@ -246,7 +246,6 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
                                     return styleResolver(option);
                                 },
                             }),
-                            await categoriesSettings(stateManager, requestManager)
                         ]
                     }),
                     App.createDUISection({
@@ -283,8 +282,6 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
                                     return styleResolver(option);
                                 },
                             }),
-                            await languageSettings(stateManager),
-                            await sourceSettings(stateManager, requestManager)
                         ]
                     })
                 ]
