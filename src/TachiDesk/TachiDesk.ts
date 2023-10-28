@@ -230,17 +230,21 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
         // only fetches when url has been set, only sets the fetched when the old record is different 
         if (serverURL !== DEFAULT_SERVER_URL) {
-            fetchServerSources(this.stateManager, this.requestManager).then((response) => {
-                if (JSON.stringify(response) !== JSON.stringify(serverSources)) {
-                    setServerSources(this.stateManager, response)
-                }
-            })
+            promises.push(
+                fetchServerSources(this.stateManager, this.requestManager).then((response) => {
+                    if (JSON.stringify(response) !== JSON.stringify(serverSources)) {
+                        setServerSources(this.stateManager, response)
+                    }
+                })
+            )
 
-            fetchServerCategories(this.stateManager, this.requestManager).then((response) => {
-                if (JSON.stringify(response) !== JSON.stringify(serverCategories)) {
-                    setServerCategories(this.stateManager, response)
-                }
-            })
+            promises.push(
+                fetchServerCategories(this.stateManager, this.requestManager).then((response) => {
+                    if (JSON.stringify(response) !== JSON.stringify(serverCategories)) {
+                        setServerCategories(this.stateManager, response)
+                    }
+                })
+            )
         }
 
         // Gets the settings values to set the type of rows

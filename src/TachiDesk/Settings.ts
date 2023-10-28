@@ -8,6 +8,8 @@ import {
 
 import {
     DEFAULT_SERVER_SOURCE,
+    fetchServerCategories,
+    fetchServerSources,
     getAuthState,
     getCategoriesIds,
     getCategoryNameFromId,
@@ -41,6 +43,8 @@ import {
     setSelectedCategories,
     setSelectedLanguages,
     setSelectedSources,
+    setServerCategories,
+    setServerSources,
     setServerURL,
     setSourceRowState,
     setSourceRowStyle,
@@ -75,8 +79,9 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                         return await getServerURL(stateManager)
                                     },
                                     async set(newValue) {
-
                                         await setServerURL(stateManager, newValue)
+                                        await setServerSources(stateManager, await fetchServerSources(stateManager, requestManager))
+                                        await setServerCategories(stateManager, await fetchServerCategories(stateManager, requestManager))
                                     }
                                 })
                             }),
@@ -85,7 +90,6 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                 label: "Test Server",
                                 onTap: async () => {
                                     const value = await testRequest(stateManager, requestManager)
-
                                     label = value instanceof Error ? value.message : JSON.stringify(value)
                                 }
                             }),
