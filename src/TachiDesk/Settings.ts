@@ -154,7 +154,7 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
 
 // Houses settings for Manga Per Row, and settings for each type of homepage section (recently updated, library category, and source )
 // for sections -> You can toggle them, change their style, change their content (which category/source)
-export const HomepageSettings = (stateManager:SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
+export const HomepageSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
     return App.createDUINavigationButton({
         id: "homepageSettings",
         label: "Homepage Settings",
@@ -214,7 +214,7 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                                     }
                                 }),
                                 labelResolver: async (option) => {
-                                    return styleResolver(option); 
+                                    return styleResolver(option);
                                 },
                             })
                         ]
@@ -250,10 +250,10 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                                     }
                                 }),
                                 labelResolver: async (option) => {
-                                    return styleResolver(option); 
+                                    return styleResolver(option);
                                 },
                             }),
-                            await categoriesSettings(stateManager,requestManager)
+                            await categoriesSettings(stateManager, requestManager)
                         ]
                     }),
                     App.createDUISection({
@@ -287,11 +287,11 @@ export const HomepageSettings = (stateManager:SourceStateManager, requestManager
                                     }
                                 }),
                                 labelResolver: async (option) => {
-                                    return styleResolver(option); 
+                                    return styleResolver(option);
                                 },
                             }),
                             await languageSettings(stateManager),
-                            await sourceSettings(stateManager,requestManager)
+                            await sourceSettings(stateManager, requestManager)
                         ]
                     })
                 ]
@@ -307,8 +307,8 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
 
     // Gets the selected categories, checks if they're in the options. If they're not, add them to a list added to the options later
     // Ensures that user can delete an old option.
-    for (const id of await getSelectedCategories(stateManager)){
-        if(!(getCategoriesIds(serverCategories).includes(id))){
+    for (const id of await getSelectedCategories(stateManager)) {
+        if (!(getCategoriesIds(serverCategories).includes(id))) {
             missedSelected.push(id)
         }
     }
@@ -333,7 +333,7 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
 }
 
 // Source selection
-export const sourceSettings = async (stateManager : SourceStateManager, requestManager : RequestManager) : Promise<DUISelect> => {
+export const sourceSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
     let serverSources = await getServerSources(stateManager);
     let missedSelected = []
     const languages = await getSelectedLanguages(stateManager)
@@ -347,9 +347,9 @@ export const sourceSettings = async (stateManager : SourceStateManager, requestM
 
     // Gets the selected sources, checks if they're in the options. If they're not, add them to a list added to the options later
     // Ensures that user can delete an old option.
-    for (const id of options.concat(await getSelectedSources(stateManager))){
+    for (const id of options.concat(await getSelectedSources(stateManager))) {
         console.log(id + ": " + JSON.stringify(getSourcesIds(serverSources).includes(id)))
-        if(!(getSourcesIds(serverSources).includes(id))){
+        if (!(getSourcesIds(serverSources).includes(id))) {
             missedSelected.push(id)
         }
     }
@@ -388,16 +388,16 @@ export const languageSettings = async (stateManager: SourceStateManager): Promis
             },
             async set(newValue) {
                 await setSelectedLanguages(stateManager, newValue)
-            }        
+            }
         }),
     })
 }
 
-export const resetSettingsButton = async (stateManager : SourceStateManager) : Promise<DUIButton> => {
+export const resetSettingsButton = async (stateManager: SourceStateManager): Promise<DUIButton> => {
     return App.createDUIButton({
         id: "resetSettingsButton",
         label: "Reset Settings",
-        onTap:async () => {
+        onTap: async () => {
             await resetSettings(stateManager)
         }
     })
