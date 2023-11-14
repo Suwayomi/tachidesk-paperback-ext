@@ -66,7 +66,7 @@ export const TachiDeskInfo: SourceInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.1',
+    version: '2.0.1',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: ContentRating.EVERYONE,
     sourceTags: [
@@ -504,6 +504,13 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             }
 
             const mangaResults = await makeRequest(this.stateManager, this.requestManager, "source/" + source + "/search" + paramsString)
+
+            // If request result is an error (evaluated by makeRequest), then skip source
+            // This stops individual sources from messing up the whole search process.
+            if (mangaResults instanceof Error){
+                continue
+            }
+
             for (const manga of mangaResults.mangaList) {
                 tiles.push(
                     App.createPartialSourceManga({
