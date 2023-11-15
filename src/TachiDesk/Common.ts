@@ -347,7 +347,7 @@ export async function testRequest(stateManager: SourceStateManager, requestManag
 // ! Requests End
 
 // ! Categories Start
-// Fetch Categories from server and returns them as an object
+// Fetch Categories from server and returns them as a record
 export async function fetchServerCategories(stateManager: SourceStateManager, requestManager: RequestManager) {
     let categories: Record<string, tachiCategory> = {};
 
@@ -388,6 +388,7 @@ export function getCategoryFromId(categories: Record<string, tachiCategory>, id:
     return categories[id] ?? DEFAULT_SERVER_CATEGORY
 }
 
+// categoryName is used to give a name to old entries which are no longer in the server
 export function getCategoryNameFromId(categories: Record<string, tachiCategory>, id: string) {
     let categoryName = "OLD ENTRY OR ERROR"
     Object.values(categories).forEach(category => {
@@ -401,7 +402,7 @@ export function getCategoryNameFromId(categories: Record<string, tachiCategory>,
 // ! Categories End
 
 // ! Sources Start
-// Fetch Sources from server
+// Fetch Sources from server and return as record
 export async function fetchServerSources(stateManager: SourceStateManager, requestManager: RequestManager) {
     let sources: Record<string, tachiSources> = {};
 
@@ -442,6 +443,7 @@ export function getSourceFromId(sources: Record<string, tachiSources>, id: strin
     return sources[id] ?? DEFAULT_SERVER_SOURCE
 }
 
+// SourceName is used to give a name to old entries which are no longer in the server
 export function getSourceNameFromId(sources: Record<string, tachiSources>, id: string) {
     let sourceName = "OLD ENTRY OR ERROR"
     Object.values(sources).forEach(source => {
