@@ -287,7 +287,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                     type: HomeSectionType[updatedRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                 }),
                 request: App.createRequest({
-                    url: (await getServerAPI(this.stateManager)) + "update/recentChapters/0",
+                    url: (await getServerAPI(this.stateManager)) + "update/recentChapters/1",
                     method: "GET"
                 }),
                 responseArray: "page", //Refers to array of manga being inside the response's page key
