@@ -69,7 +69,7 @@ export const TachiDeskInfo: SourceInfo = {
     name: 'Tachidesk',
     version: '2.1',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
-    contentRating: ContentRating.ADULT,
+    contentRating: ContentRating.EVERYONE,
     sourceTags: [
         {
             text: "Self-hosted",
@@ -85,6 +85,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         requestsPerSecond: 4,
         requestTimeout: 20000,
         interceptor: {
+            // Intercepts request to add basic auth
             interceptRequest: async (request: Request) => {
                 const authEnabled = await getAuthState(this.stateManager);
 
@@ -103,7 +104,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         }
     })
 
-    // Variable used for share URL
+    // Variable used for share URL, updated by getChapters()
     serverAddress = ""
 
     // Settings
@@ -162,7 +163,18 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
     // Chapter list, sets the share URl address
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const chaptersData: tachiChapter[] = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/chapters")
+        // Fetches manga first to use to check last fetched at
+        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
+        let chaptersQueryString = "manga/" + mangaId + "/chapters"
+
+        // If last fetched is older than a day ago, do an online fetch for the manga and the chapter list
+        // Online fetch manga to update the manga.lastFetchedAt. Seems redundant but now idea how to improve
+        if (manga.lastFetchedAt < Math.floor(Date.now() / 1000) - 86400){
+            makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "?onlineFetch=true")
+            chaptersQueryString += "?onlineFetch=true"
+        }
+
+        const chaptersData: tachiChapter[] = await makeRequest(this.stateManager, this.requestManager, chaptersQueryString)
         this.serverAddress = await getServerURL(this.stateManager)
 
         const chapters: Chapter[] = []
@@ -189,7 +201,8 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
         const pages: string[] = []
 
-        // Tachidesk uses page count, so for keys makes it easy to provide the links
+        // Tachidesk uses page count, so make an array of length pageCount then use the keys of array LOL
+        // pretty much a for i in range() from python
         for (const pageIndex of Array(chapterData.pageCount).keys()) {
             pages.push(apiURL + "manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex)
         }
@@ -224,7 +237,9 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             return;
         }
 
-        // Fetches sources and categories since it runs every time anyway
+        // Fetches sources and categories since it runs every time anyway, including after installing the extension
+        // Useful because it fetches the sources and categories from the server, so you won't have to fetch them for settings
+        // Makes settings a lot more stable (as long as homepage sections are loaded before entering settings)
         const serverURL = await getServerURL(this.stateManager);
         const serverSources = await getServerSources(this.stateManager);
         const serverCategories = await getServerCategories(this.stateManager);
@@ -249,6 +264,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         }
 
         // Gets the settings values to set the type of rows
+        // Allows for customization of each type of row (updated, category, sources)
         const mangaPerRow = await getMangaPerRow(this.stateManager);
         const updatedRowState = await getUpdatedRowState(this.stateManager);
         const categoryRowState = await getCategoryRowState(this.stateManager);
@@ -261,6 +277,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         const recentlyUpdatedDuplicates = await getRecentlyUpdatedDuplicates(this.stateManager)
 
         // Push Sections
+        // Uses regular paperback request syntax... could be changed to use the function makeRequest.
         if (updatedRowState) {
             sections.push({
                 section: App.createHomeSection({
@@ -280,7 +297,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             const serverCategories = await fetchServerCategories(this.stateManager, this.requestManager)
             const selectedCategories: Array<string> = await getSelectedCategories(this.stateManager)
 
-            // Gets the information of selected sources to compare their order on the tachidesk server
+            //Gets server categories with all request info, filters out to only include selected categories, then compares their order to sort
             const orderedSelectedCategories = Object.keys(serverCategories)
                 .filter((key) => selectedCategories.includes(key))
                 .sort((a, b) => {
@@ -316,7 +333,9 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             const serverSources = await getServerSources(this.stateManager);
             const selectedSources = await getSelectedSources(this.stateManager);
 
-            // Adds popular and latest... there might be a way to handle this better (option) but... thats a lot of sources
+            // Adds popular and latest... We could add an option to turn each on or off but no idea how to set it up
+            // Should we allow each source to have an option for both? That sounds messy.
+            // Should we allow to turn each type of row on/off entirely? idk.
             for (const sourceId of selectedSources) {
                 sections.push({
                     section: App.createHomeSection({
@@ -436,13 +455,13 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         // uses type of source to determine where to get the manga list and the api link
         switch (type) {
             case "updated":
-                page = metadata?.page ?? 0
+                page = metadata?.page ?? 1
                 apiEndpoint = "update/recentChapters/" + page;
                 response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
                 tileData = response.page
                 break
             case "category":
-                page = metadata?.page ?? undefined
+                page = metadata?.page ?? undefined // Categories don't have pages
                 apiEndpoint = "category/" + sourceId;
                 response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
                 tileData = response
@@ -501,10 +520,11 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             results: tiles,
             metadata: metadata
         })
-
     }
 
-    // For now only supports searching sources. I think this has something to do with genres / tags as well but honestly haven't looked into it
+    // For now only supports searching sources.
+    // Could support filters but it's too complicated since each source has their own set of filters
+    // and paperback considers tachidesk as 1 source.
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const serverSources = await getServerSources(this.stateManager)
         const selectedSources = await getSelectedSources(this.stateManager)
@@ -527,6 +547,13 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
             }
 
             const mangaResults = await makeRequest(this.stateManager, this.requestManager, "source/" + source + "/search" + paramsString)
+
+            // If request result is an error (evaluated by makeRequest), then skip source
+            // This stops individual sources from messing up the whole search process.
+            if (mangaResults instanceof Error){
+                continue
+            }
+
             for (const manga of mangaResults.mangaList) {
                 tiles.push(
                     App.createPartialSourceManga({

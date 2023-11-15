@@ -57,7 +57,7 @@ import {
     testRequest
 } from "./Common"
 
-// 2 Sections -> 1 for server url, another for auth
+// 2 Sections 1 page, -> 1 for server url, another for auth
 export const serverAddressSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
     // Label that shows test response
     let label = "Click on the button!"
@@ -401,6 +401,7 @@ export const languageSettings = async (stateManager: SourceStateManager): Promis
     })
 }
 
+// Button which runs a function from common which sets every Paperback value back to their default values
 export const resetSettingsButton = async (stateManager: SourceStateManager): Promise<DUIButton> => {
     return App.createDUIButton({
         id: "resetSettingsButton",
