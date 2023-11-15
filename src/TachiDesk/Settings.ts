@@ -19,6 +19,7 @@ import {
     getLanguageName,
     getMangaPerRow,
     getPassword,
+    getRecentlyUpdatedDuplicates,
     getSelectedCategories,
     getSelectedLanguages,
     getSelectedSources,
@@ -40,6 +41,7 @@ import {
     setCategoryRowStyle,
     setMangaPerRow,
     setPassword,
+    setRecentlyUpdatedDuplicates,
     setSelectedCategories,
     setSelectedLanguages,
     setSelectedSources,
@@ -213,6 +215,18 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
                                 labelResolver: async (option) => {
                                     return styleResolver(option);
                                 },
+                            }),
+                            App.createDUISwitch({
+                                id: "recentlyUpdatedDuplicates",
+                                label: "Allow Duplicates",
+                                value: App.createDUIBinding({
+                                    async get(){
+                                        return await getRecentlyUpdatedDuplicates(stateManager)
+                                    },
+                                    async set(newValue) {
+                                        await setRecentlyUpdatedDuplicates(stateManager, newValue)
+                                    }
+                                })
                             })
                         ]
                     }),

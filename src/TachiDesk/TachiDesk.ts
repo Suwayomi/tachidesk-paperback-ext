@@ -39,6 +39,7 @@ import {
     getCategoryRowState,
     getCategoryRowStyle,
     getMangaPerRow,
+    getRecentlyUpdatedDuplicates,
     getSelectedCategories,
     getSelectedSources,
     getServerAPI,
@@ -66,7 +67,7 @@ export const TachiDeskInfo: SourceInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.0',
+    version: '2.1',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: ContentRating.ADULT,
     sourceTags: [
@@ -256,6 +257,9 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         const categoryRowStyle = (await getCategoryRowStyle(this.stateManager))[0];
         const sourceRowStyle = (await getSourceRowStyle(this.stateManager))[0];
 
+        // Gets setting value to determine how to handle updated section
+        const recentlyUpdatedDuplicates = await getRecentlyUpdatedDuplicates(this.stateManager)
+
         // Push Sections
         if (updatedRowState) {
             sections.push({
@@ -369,23 +373,41 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                             break;
                     }
 
+                    // Use mangaIds to ensure duplicate filter
+                    let mangaIds : any[] = []
                     // Cuts manga list to the first X amount of manga (from settings)
                     for (const mangaResponse of data.slice(0, mangaPerRow)) {
                         let manga: tachiManga;
+
+                        // Checks to see if section type is updated.
+                        // Treats each type of tile different, updated section gets the chapter name as subtitle.
                         if (section.responseArray === "page") {
                             manga = mangaResponse.manga
+                            
+                            // If allow duplicates OR no allow duplicates and manga ID not in array
+                            if ((!recentlyUpdatedDuplicates && !mangaIds.includes(manga.id)) || recentlyUpdatedDuplicates){
+                                tiles.push(
+                                    App.createPartialSourceManga({
+                                        title: manga.title,
+                                        subtitle: mangaResponse.chapter.name,
+                                        mangaId: manga.id.toString(),
+                                        image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                                    })
+                                )
+    
+                            }
+                            mangaIds.push(manga.id)
                         }
                         else {
                             manga = mangaResponse
+                            tiles.push(
+                                App.createPartialSourceManga({
+                                    title: manga.title,
+                                    mangaId: manga.id.toString(),
+                                    image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                                })
+                            )
                         }
-
-                        tiles.push(
-                            App.createPartialSourceManga({
-                                title: manga.title,
-                                mangaId: manga.id.toString(),
-                                image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
-                            })
-                        )
                     }
 
                     section.section.items = tiles
@@ -399,6 +421,9 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
     // home sections that contain more items than shown
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
+        // Gets setting value to determine how to handle updated section
+        const recentlyUpdatedDuplicates = await getRecentlyUpdatedDuplicates(this.stateManager)
+        
         const sourceId = homepageSectionId.split('-').pop() ?? ""
         const type = homepageSectionId.split("-")[0]
 
@@ -432,23 +457,41 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
                 break;
         }
 
+        // Use mangaIds to ensure duplicate filter
+        let mangaIds : any[] = []
+        
         // updated list has a manga data and chapter data so have to specify.
+         // Treats each type of tile different, updated section gets the chapter name as subtitle.
         for (const mangaResponse of tileData) {
             let manga: tachiManga;
             if (type === "updated") {
                 manga = mangaResponse.manga
-            }
-            else {
-                manga = mangaResponse
+                if ((!recentlyUpdatedDuplicates && !mangaIds.includes(manga.id)) || recentlyUpdatedDuplicates){
+                    tiles.push(
+                        App.createPartialSourceManga({
+                            title: manga.title,
+                            mangaId: manga.id.toString(),
+                            subtitle: mangaResponse.chapter.name,
+                            image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                        })
+                    )
+                }
+
+                mangaIds.push(manga.id)
             }
 
-            tiles.push(
-                App.createPartialSourceManga({
-                    title: manga.title,
-                    mangaId: manga.id.toString(),
-                    image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
-                })
-            )
+            else {
+                manga = mangaResponse
+                tiles.push(
+                    App.createPartialSourceManga({
+                        title: manga.title,
+                        mangaId: manga.id.toString(),
+                        image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                    })
+                )
+            }
+
+
         }
 
         // Pushes the page number and results along
