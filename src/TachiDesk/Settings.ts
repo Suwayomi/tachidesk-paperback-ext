@@ -8,8 +8,6 @@ import {
 
 import {
     DEFAULT_SERVER_SOURCE,
-    fetchServerCategories,
-    fetchServerSources,
     getAuthState,
     getCategoriesIds,
     getCategoryNameFromId,
@@ -19,6 +17,7 @@ import {
     getLanguageName,
     getMangaPerRow,
     getPassword,
+    getRecentlyUpdatedDuplicates,
     getSelectedCategories,
     getSelectedLanguages,
     getSelectedSources,
@@ -40,11 +39,10 @@ import {
     setCategoryRowStyle,
     setMangaPerRow,
     setPassword,
+    setRecentlyUpdatedDuplicates,
     setSelectedCategories,
     setSelectedLanguages,
     setSelectedSources,
-    setServerCategories,
-    setServerSources,
     setServerURL,
     setSourceRowState,
     setSourceRowStyle,
@@ -55,10 +53,10 @@ import {
     testRequest
 } from "./Common"
 
-// 2 Sections -> 1 for server url, another for auth
+// 2 Sections 1 page, -> 1 for server url, another for auth
 export const serverAddressSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
     // Label that shows test response
-    let label = "Click on the button!"
+    let label = "Click on the button!";
 
     return App.createDUINavigationButton({
         id: "serverSettings",
@@ -80,8 +78,6 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                     },
                                     async set(newValue) {
                                         await setServerURL(stateManager, newValue)
-                                        await setServerSources(stateManager, await fetchServerSources(stateManager, requestManager))
-                                        await setServerCategories(stateManager, await fetchServerCategories(stateManager, requestManager))
                                     }
                                 })
                             }),
@@ -90,7 +86,12 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                 label: "Test Server",
                                 onTap: async () => {
                                     const value = await testRequest(stateManager, requestManager)
-                                    label = value instanceof Error ? value.message : JSON.stringify(value)
+                                    if (!(value instanceof Error)) {
+                                        label = "Success!"
+                                    }
+                                    // else {
+                                    //     console.log(JSON.stringify(value))
+                                    // }
                                 }
                             }),
                             App.createDUILabel({
@@ -153,7 +154,7 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
 
 // Houses settings for Manga Per Row, and settings for each type of homepage section (recently updated, library category, and source )
 // for sections -> You can toggle them, change their style, change their content (which category/source)
-export const HomepageSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
+export const HomepageSettings = (stateManager: SourceStateManager): DUINavigationButton => {
     return App.createDUINavigationButton({
         id: "homepageSettings",
         label: "Homepage Settings",
@@ -213,6 +214,18 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
                                 labelResolver: async (option) => {
                                     return styleResolver(option);
                                 },
+                            }),
+                            App.createDUISwitch({
+                                id: "recentlyUpdatedDuplicates",
+                                label: "Allow Duplicates",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await getRecentlyUpdatedDuplicates(stateManager)
+                                    },
+                                    async set(newValue) {
+                                        await setRecentlyUpdatedDuplicates(stateManager, newValue)
+                                    }
+                                })
                             })
                         ]
                     }),
@@ -295,7 +308,7 @@ export const HomepageSettings = (stateManager: SourceStateManager, requestManage
 }
 
 // Category selection
-export const categoriesSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
+export const categoriesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
     let serverCategories = await getServerCategories(stateManager);
     let missedSelected = []
 
@@ -327,7 +340,7 @@ export const categoriesSettings = async (stateManager: SourceStateManager, reque
 }
 
 // Source selection
-export const sourceSettings = async (stateManager: SourceStateManager, requestManager: RequestManager): Promise<DUISelect> => {
+export const sourceSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
     let serverSources = await getServerSources(stateManager);
     let missedSelected = []
     const languages = await getSelectedLanguages(stateManager)
@@ -366,7 +379,6 @@ export const sourceSettings = async (stateManager: SourceStateManager, requestMa
     })
 }
 
-
 export const languageSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
     return App.createDUISelect({
         id: "languageSelection",
@@ -387,6 +399,7 @@ export const languageSettings = async (stateManager: SourceStateManager): Promis
     })
 }
 
+// Button which runs a function from common which sets every Paperback value back to their default values
 export const resetSettingsButton = async (stateManager: SourceStateManager): Promise<DUIButton> => {
     return App.createDUIButton({
         id: "resetSettingsButton",
