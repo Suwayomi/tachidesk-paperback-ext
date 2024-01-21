@@ -243,7 +243,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
         const serverSources = await getServerSources(this.stateManager);
         const serverCategories = await getServerCategories(this.stateManager);
 
-        // only fetches when url has been set, only sets the fetched when the old record is different 
+        // only fetches when url has been set, only sets the fetched when the old record is different
         if (serverURL !== DEFAULT_SERVER_URL) {
             promises.push(
                 fetchServerSources(this.stateManager, this.requestManager).then((response) => {
