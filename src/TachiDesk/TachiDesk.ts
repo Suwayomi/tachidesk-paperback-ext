@@ -2,15 +2,13 @@ import {
     BadgeColor,
     Chapter,
     ChapterDetails,
-    ChapterProviding,
     ContentRating,
     DUISection,
-    HomePageSectionsProviding,
     HomeSection,
     HomeSectionType,
     PagedResults,
+    PaperbackExtensionBase,
     SearchRequest,
-    SearchResultsProviding,
     SourceInfo,
     SourceIntents,
     SourceManga,
@@ -78,7 +76,7 @@ export const TachiDeskInfo: SourceInfo = {
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS
 }
 
-export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, SearchResultsProviding {
+export class TachiDesk implements PaperbackExtensionBase {
     stateManager = App.createSourceStateManager();
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
