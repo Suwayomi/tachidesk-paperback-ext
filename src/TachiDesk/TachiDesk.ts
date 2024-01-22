@@ -3,18 +3,22 @@ import {
     Chapter,
     ChapterDetails,
     ContentRating,
+    DUIForm,
     DUISection,
     HomeSection,
     HomeSectionType,
+    MangaProgress,
+    MangaProgressProviding,
     PagedResults,
     PaperbackExtensionBase,
+    Request,
+    Response,
     SearchRequest,
     SourceInfo,
     SourceIntents,
     SourceManga,
     TagSection,
-    Request,
-    Response
+    TrackerActionQueue,
 } from "@paperback/types"
 
 import {
@@ -64,7 +68,7 @@ export const TachiDeskInfo: SourceInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.0.1',
+    version: '2.1.0',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: ContentRating.EVERYONE,
     sourceTags: [
@@ -73,10 +77,10 @@ export const TachiDeskInfo: SourceInfo = {
             type: BadgeColor.GREY
         }
     ],
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.MANGA_TRACKING
 }
 
-export class TachiDesk implements PaperbackExtensionBase {
+export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding {
     stateManager = App.createSourceStateManager();
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
@@ -528,5 +532,47 @@ export class TachiDesk implements PaperbackExtensionBase {
             results: tiles,
             metadata
         })
+    }
+
+    // This method is only used in 0.9, so it may or may not be completely correct, since it's not been tested.
+    async getMangaProgress(mangaId: string): Promise<MangaProgress | undefined> {
+        console.log(`getting manga progress for ${mangaId}`);
+        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/full")
+        console.log(`manga ${mangaId} progress: ${manga}`);
+        if (!manga.lastChapterRead) {
+            return undefined
+        }
+        return App.createMangaProgress({
+            mangaId: mangaId,
+            lastReadChapterNumber: manga.lastChapterRead.chapterNumber,
+            lastReadVolumeNumber: undefined,
+            trackedListName:  undefined,
+            userRating: undefined,
+        })
+    }
+
+    // we don't have any tracker settings yet so this just no-ops
+    async getMangaProgressManagementForm(mangaId: string): Promise<DUIForm> {
+        return App.createDUIForm({
+            sections: async () => {
+                return []
+            },
+        })
+    }
+
+    async processChapterReadActionQueue(actionQueue: TrackerActionQueue): Promise<void> {
+        const chapterReadActions = await actionQueue.queuedChapterReadActions()
+
+        for (const readAction of chapterReadActions) {
+            try {
+                let urlPath = "manga/" + readAction.mangaId + "/chapter/" + readAction.sourceChapterId;
+                console.log(`marking mangaId ${readAction.mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`)
+                await makeRequest(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true')
+                await actionQueue.discardChapterReadAction(readAction)
+            } catch (error) {
+                console.log(error)
+                await actionQueue.retryChapterReadAction(readAction)
+            }
+        }
     }
 }

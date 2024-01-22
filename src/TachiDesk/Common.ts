@@ -181,7 +181,7 @@ export interface tachiManga {
     "downloadCount": number,
     "chapterCount": number,
     "lastReadAt": number,
-    "lastChapterRead": tachiChapter,
+    "lastChapterRead"?: tachiChapter,
     "age": number,
     "chaptersAge": number
 }
@@ -292,7 +292,7 @@ export async function getPassword(stateManager: SourceStateManager) {
 // ! Authentication End
 
 // ! Requests
-export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data: Record<string, string> = {}, headers: Record<string, string> = {}) {
+export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data?: Record<string, string> | string, headers: Record<string, string> = {}) {
     const serverAPI = await getServerAPI(stateManager)
 
     const request = App.createRequest({
