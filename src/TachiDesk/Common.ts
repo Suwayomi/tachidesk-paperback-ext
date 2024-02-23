@@ -234,9 +234,15 @@ export async function resetSettings(stateManager: SourceStateManager) {
 
 // ! Server URL start
 
-export async function setServerURL(stateManager: SourceStateManager, url: string) {
-    url = url == "" ? DEFAULT_SERVER_URL : url
-    url = url.slice(-1) === '/' ? url : url + "/" // Verified / at the end of URL
+export async function setServerURL(stateManager: SourceStateManager, url: string, typed = false) {
+    // * since every key press is a value set() and get(), the override which ensuring that the URL always has a backslash won't let people delete it
+    // ! typed is a boolean that we set to true only when being entered by the DUIInputField, skipping the override when typing the url
+    // ! atleast until user hits submit.
+    if (!typed) {
+        url = url == "" ? DEFAULT_SERVER_URL : url
+        url = url.slice(-1) === '/' ? url : url + "/" // Verified / at the end of URL
+    }
+
     await stateManager.store(SERVER_URL_KEY, url)
     await stateManager.store(SERVER_API_KEY, url + DEFAULT_API_ENDPOINT)
 }
@@ -352,6 +358,10 @@ export async function fetchServerCategories(stateManager: SourceStateManager, re
     let categories: Record<string, tachiCategory> = {};
 
     const fetchedCategories = await makeRequest(stateManager, requestManager, "category/");
+
+    if (fetchedCategories instanceof Error) {
+        throw new Error("Failed to fetch categories.")
+    }
     fetchedCategories.forEach((category: tachiCategory) => {
         categories[JSON.stringify(category.id)] = category
     });
@@ -407,6 +417,11 @@ export async function fetchServerSources(stateManager: SourceStateManager, reque
     let sources: Record<string, tachiSources> = {};
 
     const fetchedSources = await makeRequest(stateManager, requestManager, "source/list")
+
+    if (fetchedSources instanceof Error) {
+        throw new Error("Failed to fetch sources.")
+    }
+
     fetchedSources.forEach((source: tachiSources) => {
         sources[source.id] = source
     });

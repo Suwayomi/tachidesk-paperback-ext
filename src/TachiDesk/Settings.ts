@@ -62,8 +62,16 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
         label: "Server Settings",
         form: App.createDUIForm({
             onSubmit: async () => {
-                await setServerSources(stateManager, await fetchServerSources(stateManager, requestManager));
-                await setServerCategories(stateManager, await fetchServerCategories(stateManager, requestManager));
+                await setServerURL(stateManager, await getServerURL(stateManager), false)
+                const serverSources = await fetchServerSources(stateManager, requestManager)
+                const serverCategories = await fetchServerCategories(stateManager, requestManager)
+                if (serverSources instanceof Error || serverCategories instanceof Error) {
+                    throw new Error("Failed to fetch server. Try again?")
+                }
+                else {
+                    await setServerSources(stateManager, serverSources);
+                    await setServerCategories(stateManager, serverCategories);
+                }
             },
             sections: async () => {
                 let testResults = "Click on the button!"
@@ -81,7 +89,7 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                         return await getServerURL(stateManager)
                                     },
                                     async set(newValue) {
-                                        await setServerURL(stateManager, newValue)
+                                        await setServerURL(stateManager, newValue, true)
                                     }
                                 })
                             }),
@@ -92,9 +100,9 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                     console.log('Testing server');
                                     const value = await testRequest(stateManager, requestManager)
                                     if (value instanceof Error) {
-                                      testResults = `Error: ${value.message}`;
+                                        testResults = `Error: ${value.message}`;
                                     } else {
-                                      testResults =`Response: ${JSON.stringify(value)}`;
+                                        testResults = `Response: ${JSON.stringify(value)}`;
                                     }
                                     console.log(`Test results: ${testResults}`)
                                 }
