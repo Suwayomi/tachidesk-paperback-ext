@@ -168,7 +168,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
         // If last fetched is older than a day ago, do an online fetch for the manga and the chapter list
         // Online fetch manga to update the manga.lastFetchedAt. Seems redundant but now idea how to improve
-        if (manga.lastFetchedAt < Math.floor(Date.now() / 1000) - 86400){
+        if (manga.lastFetchedAt < Math.floor(Date.now() / 1000) - 86400) {
             makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "?onlineFetch=true")
             chaptersQueryString += "?onlineFetch=true"
         }
@@ -507,7 +507,7 @@ export class TachiDesk implements HomePageSectionsProviding, ChapterProviding, S
 
             // If request result is an error (evaluated by makeRequest), then skip source
             // This stops individual sources from messing up the whole search process.
-            if (mangaResults instanceof Error){
+            if (mangaResults instanceof Error) {
                 continue
             }
 
