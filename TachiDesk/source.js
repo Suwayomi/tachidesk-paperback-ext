@@ -2626,9 +2626,14 @@ async function resetSettings(stateManager) {
 exports.resetSettings = resetSettings;
 // ! Reset Settings End
 // ! Server URL start
-async function setServerURL(stateManager, url) {
-    url = url == "" ? exports.DEFAULT_SERVER_URL : url;
-    url = url.slice(-1) === '/' ? url : url + "/"; // Verified / at the end of URL
+async function setServerURL(stateManager, url, typed = false) {
+    // * since every key press is a value set() and get(), the override which ensuring that the URL always has a backslash won't let people delete it
+    // ! typed is a boolean that we set to true only when being entered by the DUIInputField, skipping the override when typing the url
+    // ! atleast until user hits submit.
+    if (!typed) {
+        url = url == "" ? exports.DEFAULT_SERVER_URL : url;
+        url = url.slice(-1) === '/' ? url : url + "/"; // Verified / at the end of URL
+    }
     await stateManager.store(exports.SERVER_URL_KEY, url);
     await stateManager.store(exports.SERVER_API_KEY, url + exports.DEFAULT_API_ENDPOINT);
 }
@@ -2735,6 +2740,9 @@ exports.testRequest = testRequest;
 async function fetchServerCategories(stateManager, requestManager) {
     let categories = {};
     const fetchedCategories = await makeRequest(stateManager, requestManager, "category/");
+    if (fetchedCategories instanceof Error) {
+        throw new Error("Failed to fetch categories.");
+    }
     fetchedCategories.forEach((category) => {
         categories[JSON.stringify(category.id)] = category;
     });
@@ -2786,6 +2794,9 @@ exports.getCategoryNameFromId = getCategoryNameFromId;
 async function fetchServerSources(stateManager, requestManager) {
     let sources = {};
     const fetchedSources = await makeRequest(stateManager, requestManager, "source/list");
+    if (fetchedSources instanceof Error) {
+        throw new Error("Failed to fetch sources.");
+    }
     fetchedSources.forEach((source) => {
         sources[source.id] = source;
     });
@@ -2963,13 +2974,24 @@ exports.resetSettingsButton = exports.languageSettings = exports.sourceSettings 
 const Common_1 = require("./Common");
 // 2 Sections 1 page, -> 1 for server url, another for auth
 const serverAddressSettings = (stateManager, requestManager) => {
-    // Label that shows test response
-    let label = "Click on the button!";
     return App.createDUINavigationButton({
         id: "serverSettings",
         label: "Server Settings",
         form: App.createDUIForm({
+            onSubmit: async () => {
+                await (0, Common_1.setServerURL)(stateManager, await (0, Common_1.getServerURL)(stateManager), false);
+                const serverSources = await (0, Common_1.fetchServerSources)(stateManager, requestManager);
+                const serverCategories = await (0, Common_1.fetchServerCategories)(stateManager, requestManager);
+                if (serverSources instanceof Error || serverCategories instanceof Error) {
+                    throw new Error("Failed to fetch server. Try again?");
+                }
+                else {
+                    await (0, Common_1.setServerSources)(stateManager, serverSources);
+                    await (0, Common_1.setServerCategories)(stateManager, serverCategories);
+                }
+            },
             sections: async () => {
+                let testResults = "Click on the button!";
                 return [
                     App.createDUISection({
                         id: "urlSection",
@@ -2984,9 +3006,7 @@ const serverAddressSettings = (stateManager, requestManager) => {
                                         return await (0, Common_1.getServerURL)(stateManager);
                                     },
                                     async set(newValue) {
-                                        await (0, Common_1.setServerURL)(stateManager, newValue);
-                                        await (0, Common_1.setServerSources)(stateManager, await (0, Common_1.fetchServerSources)(stateManager, requestManager));
-                                        await (0, Common_1.setServerCategories)(stateManager, await (0, Common_1.fetchServerCategories)(stateManager, requestManager));
+                                        await (0, Common_1.setServerURL)(stateManager, newValue, true);
                                     }
                                 })
                             }),
@@ -2994,13 +3014,20 @@ const serverAddressSettings = (stateManager, requestManager) => {
                                 id: "testServerButton",
                                 label: "Test Server",
                                 onTap: async () => {
+                                    console.log('Testing server');
                                     const value = await (0, Common_1.testRequest)(stateManager, requestManager);
-                                    label = value instanceof Error ? value.message : JSON.stringify(value);
+                                    if (value instanceof Error) {
+                                        testResults = `Error: ${value.message}`;
+                                    }
+                                    else {
+                                        testResults = `Response: ${JSON.stringify(value)}`;
+                                    }
+                                    console.log(`Test results: ${testResults}`);
                                 }
                             }),
                             App.createDUILabel({
                                 id: "test_label",
-                                label: label,
+                                label: testResults,
                             })
                         ]
                     }),
