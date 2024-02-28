@@ -1,5 +1,6 @@
 import {
     DUIButton,
+    DUIForm,
     DUINavigationButton,
     DUISection,
     DUISelect,
@@ -10,15 +11,17 @@ import {
 
 import {
     State,
-    States
+    States,
+    TrackerStates
 } from "./common/States"
 
 import {
+    makeRequest,
     queryGraphQL
 } from "./common/Common"
 
 import {
-    ABOUT_QUERY,
+    ABOUT_QUERY, MANGA_TRACKER_SETTINGS_DATA, MANGA_TRACKER_SETTINGS_QUERY, MANGA_TRACKER_SETTINGS_VARIABLES, UPDATE_MANGA_QUERY, UPDATE_MANGA_VARIABLES,
 } from "./common/Queries"
 
 export const serverSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
@@ -247,7 +250,7 @@ export const sourcesSettings = async (stateManager: SourceStateManager): Promise
     })
 }
 
-export const CategoriesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
+export const categoriesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
     let serverCategories = await States.SERVER_CATEGORIES.get(stateManager)
     let options = serverCategories.map((category) => { return category.id.toString() })
 
@@ -271,6 +274,96 @@ export const CategoriesSettings = async (stateManager: SourceStateManager): Prom
             async get() { return await States.SELECTED_CATEGORIES.get(stateManager) },
             async set(newValue: string[]) { await States.SELECTED_CATEGORIES.set(stateManager, newValue) }
         })
+    })
+}
+
+export const mangaTrackerForm = async (stateManager: SourceStateManager, requestManager: RequestManager, mangaId: string): Promise<DUIForm> => {
+    const response = await queryGraphQL(stateManager, requestManager, MANGA_TRACKER_SETTINGS_QUERY, { id: parseInt(mangaId) } as MANGA_TRACKER_SETTINGS_VARIABLES) as MANGA_TRACKER_SETTINGS_DATA
+
+    const selectedCategories: string[] = response.manga.categories.nodes.map(category => { return category.id.toString() })
+
+    await TrackerStates.IN_LIBRARY.set(stateManager, response.manga.inLibrary)
+    await TrackerStates.SERVER_CATEGORIES.set(stateManager, response.categories.nodes)
+    await TrackerStates.SELECTED_CATEGORIES.set(stateManager, selectedCategories)
+    await TrackerStates.OLD_SELECTED_CATEGORIES.set(stateManager, selectedCategories)
+    return App.createDUIForm({
+        sections: async () => {
+            return [
+                App.createDUISection({
+                    id: "mangaTrackerLibrarySection",
+                    isHidden: false,
+                    rows: async () => [
+                        App.createDUISwitch({
+                            id: "mangaTrackerLibrarySwitch",
+                            label: "In Library",
+                            value: App.createDUIBinding({
+                                async get() {
+                                    console.log("GETTING: " + JSON.stringify(await TrackerStates.IN_LIBRARY.get(stateManager)))
+                                    return await TrackerStates.IN_LIBRARY.get(stateManager)
+                                },
+                                async set(newValue: boolean) {
+                                    console.log("SETTING: " + JSON.stringify(newValue))
+                                    await TrackerStates.IN_LIBRARY.set(stateManager, newValue)
+                                    console.log("AFTER SETTING: " + JSON.stringify(await TrackerStates.IN_LIBRARY.get(stateManager)))
+
+                                }
+                            })
+                        }),
+                        App.createDUISelect({
+                            id: "mangaTrackerCategoriesSelection",
+                            label: "Categories",
+                            allowsMultiselect: true,
+                            options: (await TrackerStates.SERVER_CATEGORIES.get(stateManager)).map(category => {
+                                return category.id.toString()
+                            }),
+                            labelResolver: async (option: string) => {
+                                const optionsAll = (await TrackerStates.SERVER_CATEGORIES.get(stateManager))
+                                const options: string[] = optionsAll.map(category => { return category.id.toString() })
+                                return Promise.resolve(optionsAll[options.indexOf(option)]!.name)
+                            },
+                            value: App.createDUIBinding({
+                                async get() {
+                                    return await TrackerStates.SELECTED_CATEGORIES.get(stateManager)
+                                },
+                                async set(newValue) {
+                                    await TrackerStates.SELECTED_CATEGORIES.set(stateManager, newValue)
+                                }
+                            }),
+                        })
+                    ]
+                })
+            ]
+        },
+        onSubmit: async () => {
+            console.log(JSON.stringify("HELLLOOO"))
+            const inLibrary = await TrackerStates.IN_LIBRARY.get(stateManager)
+            const selectedCategories = await TrackerStates.SELECTED_CATEGORIES.get(stateManager)
+            const oldSelectedCategories = await TrackerStates.OLD_SELECTED_CATEGORIES.get(stateManager)
+
+            const addToCategories: number[] = []
+            const removeFromCategories: number[] = []
+
+            selectedCategories.forEach(categoryId => {
+                console.log(`ADD: ${categoryId} - ${JSON.stringify(oldSelectedCategories.indexOf(categoryId))}`)
+                if (oldSelectedCategories.indexOf(categoryId) == -1) {
+                    addToCategories.push(parseInt(categoryId))
+                }
+
+            })
+            oldSelectedCategories.forEach(categoryId => {
+                console.log(`SUBTRACT: ${categoryId} - ${JSON.stringify(selectedCategories.indexOf(categoryId))}`)
+                if (selectedCategories.indexOf(categoryId) == -1) {
+                    removeFromCategories.push(parseInt(categoryId))
+                }
+            })
+
+            await queryGraphQL(stateManager, requestManager, UPDATE_MANGA_QUERY, {
+                id: parseInt(mangaId),
+                inLibrary,
+                addToCategories,
+                removeFromCategories
+            } as UPDATE_MANGA_VARIABLES)
+        }
     })
 }
 

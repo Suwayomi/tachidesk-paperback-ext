@@ -117,3 +117,21 @@ export const States = {
     })
 }
 
+export const TrackerStates = {
+    IN_LIBRARY: new State<boolean>({
+        getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("trackerInLibrary")) ?? false },
+        setter: async (stateManager: SourceStateManager, value?: boolean) => { await stateManager.store("trackerInLibrary", value) },
+    }),
+    SERVER_CATEGORIES: new State<Category[]>({
+        getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("trackerServerCategories")) ?? DEFAULT_SERVER_CATEGORIES; },
+        setter: async (stateManager: SourceStateManager, value?: Category[]) => { await stateManager.store("trackerServerCategories", value) },
+    }),
+    SELECTED_CATEGORIES: new State<string[]>({
+        getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("trackerSelectedCategories")) ?? ["0"] },
+        setter: async (stateManager: SourceStateManager, value?: string[]) => { await stateManager.store("trackerSelectedCategories", value) }
+    }),
+    OLD_SELECTED_CATEGORIES: new State<string[]>({
+        getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("trackerOldSelectedCategories")) ?? ["0"] },
+        setter: async (stateManager: SourceStateManager, value?: string[]) => { await stateManager.store("trackerOldSelectedCategories", value) }
+    }),
+}

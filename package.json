@@ -13,6 +13,7 @@
   "author": "ofelizestevez & Alles",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@paperback/runtime-polyfills": "^0.8.0-alpha.47",
     "@tsconfig/recommended": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.57.1",

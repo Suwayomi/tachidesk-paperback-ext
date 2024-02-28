@@ -2,25 +2,28 @@ import {
     BadgeColor,
     Chapter,
     ChapterDetails,
-    ChapterProviding,
     ContentRating,
+    DUIForm,
     DUISection,
-    HomePageSectionsProviding,
     HomeSection,
     HomeSectionType,
+    MangaProgress,
+    MangaProgressProviding,
     PagedResults,
+    PaperbackExtensionBase,
     PartialSourceManga,
     SearchRequest,
-    SearchResultsProviding,
     SourceInfo,
     SourceIntents,
     SourceManga,
-    TagSection
+    TagSection,
+    TrackerActionQueue
 } from "@paperback/types";
 
 import {
-    CategoriesSettings,
+    categoriesSettings,
     homepageSettings,
+    mangaTrackerForm,
     resetSettingsButton,
     serverSettings,
     sourcesSettings
@@ -51,7 +54,12 @@ import {
     GET_MANGA_DETAILS_DATA,
     GET_MANGA_DETAILS_QUERY,
     MANGA_DETAILS_VARIABLES,
-    Manga,
+    MANGA_SEARCH_DATA,
+    MANGA_SEARCH_QUERY,
+    MANGA_SEARCH_VARIABLES,
+    MANGA_TRACKER_SETTINGS_QUERY,
+    MANGA_TRACKER_SETTINGS_VARIABLES,
+    MangaSearchMetadata,
     SOURCE_DATA,
     SOURCE_QUERY,
     SOURCE_VARIABLES,
@@ -59,6 +67,8 @@ import {
     UPDATED_SECTION_DATA,
     UPDATED_SECTION_QUERY,
     UPDATED_SECTION_VARIABLES,
+    UPDATE_CHAPTER_QUERY,
+    UPDATE_CHAPTER_VARIABLES,
     UpdatedSectionMetadata
 } from "./common/Queries";
 
@@ -76,13 +86,13 @@ export const SuwayomiInfo: SourceInfo = {
             type: BadgeColor.GREY
         }
     ],
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.MANGA_TRACKING
 }
 
 // PaperbackExtensionBase
 // TODO: MangaProgressProviding
 
-export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, SearchResultsProviding {
+export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding {
     stateManager = App.createSourceStateManager();
     requestManager = App.createRequestManager({});
 
@@ -99,7 +109,7 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
             rows: async () => [
                 serverSettings(this.stateManager, this.requestManager),
                 homepageSettings(this.stateManager),
-                await CategoriesSettings(this.stateManager),
+                await categoriesSettings(this.stateManager),
                 await sourcesSettings(this.stateManager),
                 // Reset
                 await resetSettingsButton(this.stateManager)
@@ -151,6 +161,7 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
             })
         })
     }
+
     async getChapters(mangaId: string): Promise<Chapter[]> {
         let variables = {
             id: parseInt(mangaId)
@@ -179,6 +190,7 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
 
         return returnChapters;
     }
+
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         let variables = {
             id: parseInt(chapterId)
@@ -393,7 +405,10 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
         await Promise.all(promises)
     }
 
+    // Rewrite, no metadata, metadata
+    // We can make our metadata be an object of key source id value viewmoreitems source id metadata so we can pass it back
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
+        console.log("WAIT WHAT")
         const allResults: PartialSourceManga[][] = []
         const allMetadatas: any[] = []
         let results: PartialSourceManga[] = [];
@@ -419,7 +434,7 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
         else {
             results = allResults.flatMap((innerArray) => { return innerArray })
         }
-
+        console.log(JSON.stringify(allMetadatas))
         metadata = allMetadatas[0]!
         return App.createPagedResults({
             results,
@@ -428,6 +443,9 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
+        console.log("getViewMoreItems")
+        console.log(homepageSectionId)
+        console.log(JSON.stringify(metadata))
         const sourceId = homepageSectionId.split('-').pop() ?? ""
         const type = homepageSectionId.split("-")[0]
 
@@ -498,7 +516,6 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
             })
         }
         else if (type == "search") {
-
             let page = metadata?.page ?? 1
             let length = metadata?.length ?? await States.MANGA_PER_SECTION.get(this.stateManager)
             let starting = metadata?.starting ?? 0;
@@ -512,6 +529,19 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
                 starting,
                 hasNextPage,
                 type: "SEARCH",
+            })
+        }
+        else {
+            let first = metadata?.first ?? await States.MANGA_PER_SECTION.get(this.stateManager)
+            let offset = metadata?.offset ?? 0
+            let query = metadata?.query ?? "";
+
+            pagedResults = await this.getViewMoreItemsManga({
+                serverUrl,
+                first,
+                offset,
+                query,
+                hasNextPage
             })
         }
 
@@ -576,6 +606,7 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
     }
 
     async getViewMoreItemsSources(sourceId: string, metadata: SourceSectionMetadata): Promise<PagedResults> {
+
         const results: PartialSourceManga[] = [];
 
         const variables = {
@@ -614,6 +645,60 @@ export class Suwayomi implements HomePageSectionsProviding, ChapterProviding, Se
             results: results,
             metadata: metadata
         })
+    }
+
+    async getViewMoreItemsManga(metadata: MangaSearchMetadata): Promise<PagedResults> {
+        const results: PartialSourceManga[] = []
+
+        const variables = {
+            includes: metadata.query,
+            first: metadata.first,
+            offset: metadata.offset,
+        } as MANGA_SEARCH_VARIABLES
+
+        const response = await queryGraphQL(this.stateManager, this.requestManager, MANGA_SEARCH_QUERY, variables) as MANGA_SEARCH_DATA
+
+        response.mangas.nodes.forEach((manga) => {
+            results.push(App.createPartialSourceManga({
+                mangaId: manga.id.toString(),
+                image: metadata.serverUrl + manga.thumbnailUrl,
+                title: manga.title,
+                subtitle: manga.source.displayName
+            }))
+        })
+
+        metadata.offset += metadata.first
+        metadata.hasNextPage = response.mangas.hasNextPage
+
+        return App.createPagedResults({
+            results: results,
+            metadata
+        })
+    }
+
+    async getMangaProgress(mangaId: string): Promise<MangaProgress | undefined> {
+        console.log("GET MANGA PROGRESS???")
+
+        return Promise.resolve(undefined)
+    }
+
+    async getMangaProgressManagementForm(mangaId: string): Promise<DUIForm> {
+        return await mangaTrackerForm(this.stateManager, this.requestManager, mangaId)
+    }
+
+    async processChapterReadActionQueue(actionQueue: TrackerActionQueue): Promise<void> {
+        const chapterReadActions = await actionQueue.queuedChapterReadActions()
+
+        for (const readAction of chapterReadActions) {
+            try {
+                await queryGraphQL(this.stateManager, this.requestManager, UPDATE_CHAPTER_QUERY, { id: parseInt(readAction.sourceChapterId) } as UPDATE_CHAPTER_VARIABLES)
+                await actionQueue.discardChapterReadAction(readAction)
+            }
+            catch (error) {
+                console.log(error)
+                await actionQueue.retryChapterReadAction(readAction)
+            }
+        }
     }
 }
 

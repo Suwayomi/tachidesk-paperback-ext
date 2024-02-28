@@ -302,8 +302,59 @@ export interface FETCH_MANGA_DETAILS_DATA {
     }
 }
 
+export interface MangaSearchMetadata extends SectionMetadata {
+    query: string,
+    first: number,
+    offset: number,
+
+}
+
+export interface MANGA_SEARCH_VARIABLES {
+    includes: string,
+    first: number,
+    offset: number
+}
+
+export const MANGA_SEARCH_QUERY = `
+query ($includes: String!, $first: Int!, $offset: Int!) {
+	mangas(
+		filter: {title: {includesInsensitive: $includes}}
+		first: $first
+		offset: $offset
+		orderBy: IN_LIBRARY_AT
+		orderByType: DESC
+	) {
+		nodes {
+			id
+			title
+			thumbnailUrl
+			source {
+				displayName
+			}
+		}
+		pageInfo {
+			hasNextPage
+		}
+	}
+}
+`
+
+export interface MANGA_SEARCH_DATA {
+    mangas: {
+        nodes: {
+            id: number
+            title: string
+            thumbnailUrl: string
+            source: {
+                displayName: string
+            }
+        }[]
+        hasNextPage: boolean
+    }
+}
+
 // ! ----
-// ! CHAPTER_LIST_VARIABLES
+// ! Chapter
 // ! ---
 
 export interface Chapter {
@@ -373,6 +424,22 @@ export interface FETCH_CHAPTER_LIST_DATA {
     }
 };
 
+export interface UPDATE_CHAPTER_VARIABLES {
+    id: number
+}
+
+export const UPDATE_CHAPTER_QUERY = `
+mutation ($id: Int!) {
+	updateChapter(input: {id: $id, patch: {isRead: true}}) {
+		chapter {
+			id
+		}
+	}
+}
+`
+
+
+
 // ! ----
 // ! CHAPTER_PAGES
 // ! ---
@@ -393,3 +460,76 @@ export interface FETCH_CHAPTER_DATA {
         pages: string[]
     }
 }
+
+// ! ----
+// ! Tracker
+// ! ----
+
+export interface MANGA_TRACKER_SETTINGS_VARIABLES {
+    id: number
+}
+
+export const MANGA_TRACKER_SETTINGS_QUERY = `
+query ($id: Int!) {
+	manga(id: $id) {
+		inLibrary
+		categories {
+			nodes {
+				id
+                name
+			}
+		}
+	}
+	categories {
+		nodes {
+			id
+			order
+            name
+		}
+	}
+}
+`
+export interface MANGA_TRACKER_SETTINGS_DATA {
+    manga: {
+        inLibrary: boolean
+        categories: {
+            nodes: {
+                id: number
+                name: string
+            }[]
+        }
+    }
+    categories: {
+        nodes: {
+            id: number
+            order: number
+            name: string
+        }[]
+    }
+}
+
+export interface UPDATE_MANGA_VARIABLES {
+    id: number
+    inLibrary: boolean
+    addToCategories: number[]
+    removeFromCategories: number[]
+}
+
+export const UPDATE_MANGA_QUERY = `
+mutation MyMutation($addToCategories: [Int!] = [10], $removeFromCategories: [Int!] = 10, $inLibrary: Boolean = false, $id: Int = 10) {
+    updateManga(input: {id: $id, patch: {inLibrary: $inLibrary}}) {
+      manga {
+        id
+        inLibrary
+        title
+      }
+    }
+    updateMangaCategories(
+      input: {id: $id, patch: {addToCategories: $addToCategories, removeFromCategories: $removeFromCategories}}
+    ) {
+      manga {
+        id
+      }
+    }
+  }
+` 
