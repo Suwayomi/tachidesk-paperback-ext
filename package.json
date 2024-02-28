@@ -1,7 +1,7 @@
 {
-  "name": "tachidesk-paperback-ext",
+  "name": "suwayomi-paperback-ext",
   "version": "1.0.0",
-  "repositoryName": "Tachidesk Extension",
+  "repositoryName": "Suwayomi Extension",
   "description": "Community maintained Paperback extension repository",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "npx paperback test",
     "nodemon": "nodemon"
   },
-  "author": "Netsky",
+  "author": "ofelizestevez & Alles",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
