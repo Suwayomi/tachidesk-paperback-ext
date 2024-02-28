@@ -2688,7 +2688,7 @@ async function getPassword(stateManager) {
 exports.getPassword = getPassword;
 // ! Authentication End
 // ! Requests
-async function makeRequest(stateManager, requestManager, apiEndpoint, method = "GET", data = {}, headers = {}) {
+async function makeRequest(stateManager, requestManager, apiEndpoint, method = "GET", data, headers = {}) {
     const serverAPI = await getServerAPI(stateManager);
     const request = App.createRequest({
         url: serverAPI + apiEndpoint,
@@ -3337,7 +3337,7 @@ exports.TachiDeskInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.0.1',
+    version: '2.1.0',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: types_1.ContentRating.EVERYONE,
     sourceTags: [
@@ -3346,7 +3346,7 @@ exports.TachiDeskInfo = {
             type: types_1.BadgeColor.GREY
         }
     ],
-    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.SETTINGS_UI | types_1.SourceIntents.HOMEPAGE_SECTIONS
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.SETTINGS_UI | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.MANGA_TRACKING
 };
 class TachiDesk {
     constructor() {
@@ -3491,7 +3491,7 @@ class TachiDesk {
         const serverURL = await (0, Common_1.getServerURL)(this.stateManager);
         const serverSources = await (0, Common_1.getServerSources)(this.stateManager);
         const serverCategories = await (0, Common_1.getServerCategories)(this.stateManager);
-        // only fetches when url has been set, only sets the fetched when the old record is different 
+        // only fetches when url has been set, only sets the fetched when the old record is different
         if (serverURL !== Common_1.DEFAULT_SERVER_URL) {
             promises.push((0, Common_1.fetchServerSources)(this.stateManager, this.requestManager).then((response) => {
                 if (JSON.stringify(response) !== JSON.stringify(serverSources)) {
@@ -3738,6 +3738,45 @@ class TachiDesk {
             results: tiles,
             metadata
         });
+    }
+    // This method is only used in 0.9, so it may or may not be completely correct, since it's not been tested.
+    async getMangaProgress(mangaId) {
+        console.log(`getting manga progress for ${mangaId}`);
+        const manga = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId + "/full");
+        console.log(`manga ${mangaId} progress: ${manga}`);
+        if (!manga.lastChapterRead) {
+            return undefined;
+        }
+        return App.createMangaProgress({
+            mangaId: mangaId,
+            lastReadChapterNumber: manga.lastChapterRead.chapterNumber,
+            lastReadVolumeNumber: undefined,
+            trackedListName: undefined,
+            userRating: undefined,
+        });
+    }
+    // we don't have any tracker settings yet so this just no-ops
+    async getMangaProgressManagementForm(mangaId) {
+        return App.createDUIForm({
+            sections: async () => {
+                return [];
+            },
+        });
+    }
+    async processChapterReadActionQueue(actionQueue) {
+        const chapterReadActions = await actionQueue.queuedChapterReadActions();
+        for (const readAction of chapterReadActions) {
+            try {
+                let urlPath = "manga/" + readAction.mangaId + "/chapter/" + readAction.sourceChapterId;
+                console.log(`marking mangaId ${readAction.mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`);
+                await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true');
+                await actionQueue.discardChapterReadAction(readAction);
+            }
+            catch (error) {
+                console.log(error);
+                await actionQueue.retryChapterReadAction(readAction);
+            }
+        }
     }
 }
 exports.TachiDesk = TachiDesk;
