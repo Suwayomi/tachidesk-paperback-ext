@@ -16,12 +16,16 @@ import {
 } from "./common/States"
 
 import {
-    makeRequest,
     queryGraphQL
 } from "./common/Common"
 
 import {
-    ABOUT_QUERY, MANGA_TRACKER_SETTINGS_DATA, MANGA_TRACKER_SETTINGS_QUERY, MANGA_TRACKER_SETTINGS_VARIABLES, UPDATE_MANGA_QUERY, UPDATE_MANGA_VARIABLES,
+    ABOUT_QUERY,
+    MANGA_TRACKER_SETTINGS_DATA,
+    MANGA_TRACKER_SETTINGS_QUERY,
+    MANGA_TRACKER_SETTINGS_VARIABLES,
+    UPDATE_MANGA_QUERY,
+    UPDATE_MANGA_VARIABLES,
 } from "./common/Queries"
 
 export const serverSettings = (stateManager: SourceStateManager, requestManager: RequestManager): DUINavigationButton => {
@@ -219,6 +223,33 @@ export const homepageRowSettings = (stateManager: SourceStateManager, switchStat
     })
 }
 
+export const categoriesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
+    let serverCategories = await States.SERVER_CATEGORIES.get(stateManager)
+    let options = serverCategories.map((category) => { return category.id.toString() })
+
+    let currentlySelected = await States.SELECTED_CATEGORIES.get(stateManager)
+    currentlySelected.forEach((id) => {
+        if (!(options.includes(id))) {
+            options.push(id)
+        }
+    })
+
+    return App.createDUISelect({
+        id: "CategoriesSelection",
+        label: "Categories",
+        allowsMultiselect: true,
+        options: options,
+        labelResolver: async (option) => {
+            const index = options.indexOf(option)
+            return Promise.resolve(serverCategories[index]!.name ?? "#OLD ENTRY#")
+        },
+        value: App.createDUIBinding({
+            async get() { return await States.SELECTED_CATEGORIES.get(stateManager) },
+            async set(newValue: string[]) { await States.SELECTED_CATEGORIES.set(stateManager, newValue) }
+        })
+    })
+}
+
 export const sourcesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
     let serverSources = await States.SERVER_SOURCES.get(stateManager)
     let options = serverSources.map((source) => { return source.id })
@@ -246,33 +277,6 @@ export const sourcesSettings = async (stateManager: SourceStateManager): Promise
             async set(newValue: string[]) {
                 await States.SELECTED_SOURCES.set(stateManager, newValue)
             }
-        })
-    })
-}
-
-export const categoriesSettings = async (stateManager: SourceStateManager): Promise<DUISelect> => {
-    let serverCategories = await States.SERVER_CATEGORIES.get(stateManager)
-    let options = serverCategories.map((category) => { return category.id.toString() })
-
-    let currentlySelected = await States.SELECTED_CATEGORIES.get(stateManager)
-    currentlySelected.forEach((id) => {
-        if (!(options.includes(id))) {
-            options.push(id)
-        }
-    })
-
-    return App.createDUISelect({
-        id: "CategoriesSelection",
-        label: "Categories",
-        allowsMultiselect: true,
-        options: options,
-        labelResolver: async (option) => {
-            const index = options.indexOf(option)
-            return Promise.resolve(serverCategories[index]!.name ?? "#OLD ENTRY#")
-        },
-        value: App.createDUIBinding({
-            async get() { return await States.SELECTED_CATEGORIES.get(stateManager) },
-            async set(newValue: string[]) { await States.SELECTED_CATEGORIES.set(stateManager, newValue) }
         })
     })
 }

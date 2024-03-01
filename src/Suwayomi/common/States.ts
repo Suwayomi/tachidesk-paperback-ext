@@ -3,17 +3,16 @@ import { ALL_CATEGORIES_DATA, ALL_CATEGORIES_QUERY, ALL_SOURCES_DATA, ALL_SOURCE
 import { DEFAULT_SERVER_CATEGORIES, DEFAULT_SERVER_SOURCES } from "./Defaults";
 import { queryGraphQL } from "./Common";
 
+// State class uses parameters as .get(), .set(), .fetch()
 export class State<T> {
     private getter: (stateManager: SourceStateManager) => Promise<T>;
     private setter: (stateManager: SourceStateManager, value?: T) => Promise<void>;
     private fetcher?: (stateManager: SourceStateManager, requestManager: RequestManager) => Promise<T>; // Change return type to Promise<T>
-    private checker?: (stateManager: SourceStateManager) => Promise<void>;
 
-    constructor({ getter, setter, fetcher, checker }: { getter: (stateManager: SourceStateManager) => Promise<T>, setter: (stateManager: SourceStateManager, value?: T) => Promise<void>, fetcher?: (stateManager: SourceStateManager, requestManager: RequestManager) => Promise<T>, checker?: (stateManager: SourceStateManager) => Promise<void> }) {
+    constructor({ getter, setter, fetcher }: { getter: (stateManager: SourceStateManager) => Promise<T>, setter: (stateManager: SourceStateManager, value?: T) => Promise<void>, fetcher?: (stateManager: SourceStateManager, requestManager: RequestManager) => Promise<T> }) {
         this.getter = getter;
         this.setter = setter;
         this.fetcher = fetcher;
-        this.checker = checker;
     }
 
     async get(stateManager: SourceStateManager): Promise<T> {
@@ -31,13 +30,9 @@ export class State<T> {
         throw new Error("Fetcher not implemented");
     }
 
-    async check(stateManager: SourceStateManager): Promise<void> {
-        if (this.checker) {
-            return this.checker(stateManager);
-        }
-    }
 }
 
+// Object that houses StateManager info for normal extension 
 export const States = {
     SERVER_URL: new State<string>({
         getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("serverURL")) ?? "http://127.0.0.1:4567" },
@@ -117,6 +112,7 @@ export const States = {
     })
 }
 
+// Temporary States for tracker to use.
 export const TrackerStates = {
     IN_LIBRARY: new State<boolean>({
         getter: async (stateManager: SourceStateManager) => { return (await stateManager.retrieve("trackerInLibrary")) ?? false },

@@ -1,17 +1,7 @@
-
-
-export interface GraphQlResponse {
-    data: {}
-};
-
-export interface GrapQlError {
-    errors: any[]
-};
-
-export interface SectionMetadata {
+export interface HOME_SECTION_METADATA {
     serverUrl: string
     hasNextPage: boolean
-}
+};
 
 // ! ----
 // ! Test Query
@@ -25,7 +15,7 @@ query {
 }`;
 
 // ! ----
-// ! Get All Server Categories Query
+// ! Server Categories Query
 // ! ----
 
 export interface Category {
@@ -52,12 +42,11 @@ export interface ALL_CATEGORIES_DATA {
 };
 
 // ! ----
-// ! Get All Server Sources Query
+// ! Server Sources Query
 // ! ----
 
 export interface Sources {
     id: string,
-    name: string,
     displayName: string,
     lang: string,
     supportsLatest: boolean
@@ -68,7 +57,6 @@ query {
     sources {
         nodes {
             id
-            name
             displayName
             lang
             supportsLatest
@@ -86,13 +74,13 @@ export interface ALL_SOURCES_DATA {
 // ! Updated Homepage Section
 // ! ----
 
-export interface UpdatedSectionMetadata extends SectionMetadata {
+export interface UpdatedSectionMetadata extends HOME_SECTION_METADATA {
     first: number
     offset: number
-}
+};
 
 export interface UPDATED_SECTION_VARIABLES {
-    first: number,
+    first: number
     offset: number
 };
 
@@ -119,8 +107,7 @@ query ($first: Int!, $offset: Int!){
             hasNextPage
         }
 	}
-}
-`
+}`;
 
 export interface UPDATED_SECTION_DATA {
     chapters: {
@@ -136,23 +123,22 @@ export interface UPDATED_SECTION_DATA {
             hasNextPage: boolean
         }
     }
-}
+};
 
 // ! ----
 // ! Category Homepage Section
 // ! ----
 
-export interface CategorySectionMetadata extends SectionMetadata {
+export interface CategorySectionMetadata extends HOME_SECTION_METADATA {
     first: number
     offset: number
-}
+};
 
 export interface CATEGORY_SECTION_VARIABLES {
     categoryIds: number[]
     first: number,
     offset: number
 };
-
 
 export const CATEGORY_SECTION_QUERY = `
 query ($categoryIds: [Int!], $first: Int!, $offset: Int!) {
@@ -169,8 +155,8 @@ query ($categoryIds: [Int!], $first: Int!, $offset: Int!) {
 			hasNextPage
 		}
 	}
-}
-`
+}`;
+
 export interface CATEGORY_SECTION_DATA {
     mangas: {
         nodes: {
@@ -185,28 +171,28 @@ export interface CATEGORY_SECTION_DATA {
             hasNextPage: boolean
         }
     }
-}
+};
 
 // ! ----
 // ! Source Homepage Section
 // ! ----
 
-export interface SourceSectionMetadata extends SectionMetadata {
+export interface SourceSectionMetadata extends HOME_SECTION_METADATA {
     query: string,
     page: number,
     length: number
     starting: number,
-    type: "LATEST" | "POPULAR" | "SEARCH",
-}
+    type: string,
+};
 
-export interface SOURCE_VARIABLES {
+export interface SOURCE_SECTION_VARIABLES {
     page: number
     source: string
-    type: "LATEST" | "POPULAR" | "SEARCH",
+    type: string,
     query: string
 };
 
-export const SOURCE_QUERY = `
+export const SOURCE_SECTION_QUERY = `
 mutation ($page: Int!, $source: LongString!, $type: FetchSourceMangaType!, $query: String!) {
 	fetchSourceManga(
 		input: {source: $source, page: $page, type: $type, query: $query}
@@ -222,11 +208,64 @@ mutation ($page: Int!, $source: LongString!, $type: FetchSourceMangaType!, $quer
 		}
 		hasNextPage
 	}
-}
-`
-export interface SOURCE_DATA {
+}`;
+
+export interface SOURCE_SECTION_DATA {
     fetchSourceManga: {
         mangas: {
+            id: number
+            title: string
+            thumbnailUrl: string
+            source: {
+                displayName: string
+            }
+        }[]
+        hasNextPage: boolean
+    }
+};
+
+// ! ----
+// ! Manga Search
+// ! ----
+
+export interface MANGA_SEARCH_METADATA extends HOME_SECTION_METADATA {
+    query: string,
+    first: number,
+    offset: number,
+}
+
+export interface MANGA_SEARCH_VARIABLES {
+    includes: string,
+    first: number,
+    offset: number
+}
+
+export const MANGA_SEARCH_QUERY = `
+query ($includes: String!, $first: Int!, $offset: Int!) {
+	mangas(
+		filter: {title: {includesInsensitive: $includes}}
+		first: $first
+		offset: $offset
+		orderBy: IN_LIBRARY_AT
+		orderByType: DESC
+	) {
+		nodes {
+			id
+			title
+			thumbnailUrl
+			source {
+				displayName
+			}
+		}
+		pageInfo {
+			hasNextPage
+		}
+	}
+}`;
+
+export interface MANGA_SEARCH_DATA {
+    mangas: {
+        nodes: {
             id: number
             title: string
             thumbnailUrl: string
@@ -302,57 +341,6 @@ export interface FETCH_MANGA_DETAILS_DATA {
     }
 }
 
-export interface MangaSearchMetadata extends SectionMetadata {
-    query: string,
-    first: number,
-    offset: number,
-
-}
-
-export interface MANGA_SEARCH_VARIABLES {
-    includes: string,
-    first: number,
-    offset: number
-}
-
-export const MANGA_SEARCH_QUERY = `
-query ($includes: String!, $first: Int!, $offset: Int!) {
-	mangas(
-		filter: {title: {includesInsensitive: $includes}}
-		first: $first
-		offset: $offset
-		orderBy: IN_LIBRARY_AT
-		orderByType: DESC
-	) {
-		nodes {
-			id
-			title
-			thumbnailUrl
-			source {
-				displayName
-			}
-		}
-		pageInfo {
-			hasNextPage
-		}
-	}
-}
-`
-
-export interface MANGA_SEARCH_DATA {
-    mangas: {
-        nodes: {
-            id: number
-            title: string
-            thumbnailUrl: string
-            source: {
-                displayName: string
-            }
-        }[]
-        hasNextPage: boolean
-    }
-}
-
 // ! ----
 // ! Chapter
 // ! ---
@@ -373,7 +361,7 @@ export interface CHAPTER_LIST_VARIABLES {
 export const GET_CHAPTER_LIST_QUERY = `
 query MyQuery($id: Int!) {
     manga(id: $id) {
-        lastFetchedAt
+        chaptersLastFetchedAt
     }
     chapters(condition: {mangaId: $id}) {
         nodes {
@@ -387,12 +375,7 @@ query MyQuery($id: Int!) {
 }`;
 
 export const FETCH_CHAPTER_LIST_QUERY = `
-mutation MyMutation($id: Int!) {
-    fetchManga(input: {id: $id}) {
-        manga {
-            lastFetchedAt
-        }
-    }
+mutation ($id: Int!) {
     fetchChapters(input: {mangaId: $id}) {
         chapters {
             id
@@ -406,7 +389,7 @@ mutation MyMutation($id: Int!) {
 
 export interface GET_CHAPTER_LIST_DATA {
     manga: {
-        lastFetchedAt: string
+        chaptersLastFetchedAt: string
     }
     chapters: {
         nodes: Chapter[]
@@ -414,11 +397,6 @@ export interface GET_CHAPTER_LIST_DATA {
 };
 
 export interface FETCH_CHAPTER_LIST_DATA {
-    fetchManga: {
-        manga: {
-            lastFetchedAt: string
-        }
-    }
     fetchChapters: {
         chapters: Chapter[]
     }
@@ -437,8 +415,6 @@ mutation ($id: Int!) {
 	}
 }
 `
-
-
 
 // ! ----
 // ! CHAPTER_PAGES

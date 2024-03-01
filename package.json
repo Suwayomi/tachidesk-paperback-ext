@@ -10,7 +10,7 @@
     "test": "npx paperback test",
     "nodemon": "nodemon"
   },
-  "author": "ofelizestevez & Alles",
+  "author": "ofelizestevez, Alles, chancez",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@paperback/runtime-polyfills": "^0.8.0-alpha.47",

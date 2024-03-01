@@ -1,26 +1,11 @@
-import { SourceStateManager, RequestManager, HomeSection } from "@paperback/types";
+import {
+    SourceStateManager,
+    RequestManager
+} from "@paperback/types";
 import { States } from "./States";
 import { ALL_SOURCES_QUERY } from "./Queries";
 
-export interface HomepageSectionDetails {
-    section: HomeSection,
-    query: string,
-    variables?: {}
-}
-
-
-
-export const serverUnavailableMangaTiles = () => {
-    return [
-        App.createPartialSourceManga({
-            title: "Server",
-            image: "",
-            mangaId: "placeholder-id",
-            subtitle: "Unavailable"
-        })
-    ]
-}
-
+// Accounts for Basic Authenticity, Makes requests, then error checks the requests
 export const makeRequest = async (stateManager: SourceStateManager, requestManager: RequestManager, url: string, method = "GET", data: Record<string, string> = {}, headers: Record<string, string> = {}) => {
     const authEnabled = await States.AUTH_STATE.get(stateManager)
 
@@ -79,10 +64,11 @@ export const makeRequest = async (stateManager: SourceStateManager, requestManag
     return responseData
 }
 
+// Processes GraphQL queries and returns errors or data
 export const queryGraphQL = async (stateManager: SourceStateManager, requestManager: RequestManager, query: string, variables: any = {}) => {
     let url = (await States.SERVER_URL.get(stateManager))
-    url = url == "" ? "http://127.0.0.1:4567" : url;
-    url = url.slice(-1) === '/' ? url.slice(0, -1) : url;
+    url = url == "" ? "http://127.0.0.1:4567" : url; // checks for empty string
+    url = url.slice(-1) === '/' ? url.slice(0, -1) : url; // checks that url doesn't end with /
     url += "/api/graphql"
 
     let data = {
@@ -107,9 +93,11 @@ export const queryGraphQL = async (stateManager: SourceStateManager, requestMana
     return request.data
 }
 
+// Fetches required information for app to use
 export const fetchServerInfo = async (stateManager: SourceStateManager, requestManager: RequestManager) => {
     const request = await queryGraphQL(stateManager, requestManager, ALL_SOURCES_QUERY)
 
+    // If test query isn't an error, fetch and set required resources
     if (!(request instanceof Error)) {
         const fetchedSources = await States.SERVER_SOURCES.fetch(stateManager, requestManager)
         const fetchedCategories = await States.SERVER_CATEGORIES.fetch(stateManager, requestManager)

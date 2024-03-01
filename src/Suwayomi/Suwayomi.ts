@@ -16,7 +16,6 @@ import {
     SourceInfo,
     SourceIntents,
     SourceManga,
-    TagSection,
     TrackerActionQueue
 } from "@paperback/types";
 
@@ -30,8 +29,8 @@ import {
 } from "./Settings";
 
 import {
-    HomepageSectionDetails,
-    fetchServerInfo, queryGraphQL, serverUnavailableMangaTiles
+    fetchServerInfo,
+    queryGraphQL
 } from "./common/Common";
 
 import { States } from "./common/States";
@@ -57,12 +56,10 @@ import {
     MANGA_SEARCH_DATA,
     MANGA_SEARCH_QUERY,
     MANGA_SEARCH_VARIABLES,
-    MANGA_TRACKER_SETTINGS_QUERY,
-    MANGA_TRACKER_SETTINGS_VARIABLES,
-    MangaSearchMetadata,
-    SOURCE_DATA,
-    SOURCE_QUERY,
-    SOURCE_VARIABLES,
+    MANGA_SEARCH_METADATA,
+    SOURCE_SECTION_DATA,
+    SOURCE_SECTION_QUERY,
+    SOURCE_SECTION_VARIABLES,
     SourceSectionMetadata,
     UPDATED_SECTION_DATA,
     UPDATED_SECTION_QUERY,
@@ -72,8 +69,13 @@ import {
     UpdatedSectionMetadata
 } from "./common/Queries";
 
+import {
+    HomepageSectionDetails,
+    serverUnavailableMangaTiles
+} from "./common/Defaults";
+
 export const SuwayomiInfo: SourceInfo = {
-    author: 'ofelizestevez & Alles',
+    author: 'ofelizestevez, Alles, chancez',
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Suwayomi',
@@ -89,17 +91,17 @@ export const SuwayomiInfo: SourceInfo = {
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.SETTINGS_UI | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.MANGA_TRACKING
 }
 
-// PaperbackExtensionBase
-// TODO: MangaProgressProviding
-
+// PaperbackExtensionBase -- normal extension function
+// MangaProgressProviding allows sync FROM paperback TO suwayomi server
 export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding {
     stateManager = App.createSourceStateManager();
-    requestManager = App.createRequestManager({});
+    requestManager = App.createRequestManager({ requestsPerSecond: 4 });
 
-    // States.SERVER_URL.get(this.stateManager) ???
-    serverAddress = "";
+    serverAddress = ""
 
+    // Settings
     async getSourceMenu(): Promise<DUISection> {
+        // Fetches everything before opening settings. Same as getHomePageSections, Minimizing settings crashes
         await fetchServerInfo(this.stateManager, this.requestManager)
 
         return App.createDUISection({
@@ -111,7 +113,6 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                 homepageSettings(this.stateManager),
                 await categoriesSettings(this.stateManager),
                 await sourcesSettings(this.stateManager),
-                // Reset
                 await resetSettingsButton(this.stateManager)
             ]
         })
@@ -125,28 +126,22 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
+        let data: GET_MANGA_DETAILS_DATA | FETCH_MANGA_DETAILS_DATA;
         let variables = {
             id: parseInt(mangaId)
         } as MANGA_DETAILS_VARIABLES
 
-        let data: GET_MANGA_DETAILS_DATA | FETCH_MANGA_DETAILS_DATA = await queryGraphQL(this.stateManager, this.requestManager, GET_MANGA_DETAILS_QUERY, variables) as GET_MANGA_DETAILS_DATA
+        // Get Info
+        data = await queryGraphQL(this.stateManager, this.requestManager, GET_MANGA_DETAILS_QUERY, variables) as GET_MANGA_DETAILS_DATA
         let manga = data.manga
 
+        // Checks for lastFetched, if 0 or longer than a day, fetch
+        // 86400 == 24hr * 60min * 60sec
         if (manga.lastFetchedAt == "0" || (parseInt(manga.lastFetchedAt)) < Math.floor(Date.now() / 1000) - 86400) {
             data = await queryGraphQL(this.stateManager, this.requestManager, FETCH_MANGA_DETAILS_QUERY, variables) as FETCH_MANGA_DETAILS_DATA
             manga = data.fetchManga.manga
         }
 
-        const tags: [TagSection] = [
-            App.createTagSection({
-                id: "0",
-                label: "genres",
-                tags: manga.genre.map((tag: string) => App.createTag({
-                    id: tag,
-                    label: tag,
-                }))
-            })
-        ]
 
         return App.createSourceManga({
             id: mangaId,
@@ -157,38 +152,48 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                 artist: manga.artist,
                 desc: manga.description,
                 status: manga.status,
-                tags
+                tags: [
+                    App.createTagSection({
+                        id: "0",
+                        label: "genres",
+                        tags: manga.genre.map((tag: string) =>
+                            App.createTag({
+                                id: tag,
+                                label: tag
+                            })
+                        )
+                    })
+                ]
             })
         })
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
+        let data: GET_CHAPTER_LIST_DATA | FETCH_CHAPTER_LIST_DATA;
         let variables = {
             id: parseInt(mangaId)
         } as CHAPTER_LIST_VARIABLES
 
-        let data: GET_CHAPTER_LIST_DATA | FETCH_CHAPTER_LIST_DATA = await queryGraphQL(this.stateManager, this.requestManager, GET_CHAPTER_LIST_QUERY, variables) as GET_CHAPTER_LIST_DATA
-
+        // Gets Chapter List
+        data = await queryGraphQL(this.stateManager, this.requestManager, GET_CHAPTER_LIST_QUERY, variables) as GET_CHAPTER_LIST_DATA
         let manga = data.manga
         let chapters = data.chapters.nodes
 
-        if (chapters.length == 0 || (parseInt(manga.lastFetchedAt)) < Math.floor(Date.now() / 1000) - 86400) {
+        // Checks if chapter is empty or last fetch of manga
+        if (chapters.length == 0 || (parseInt(manga.chaptersLastFetchedAt)) < Math.floor(Date.now() / 1000) - 86400) {
             data = await queryGraphQL(this.stateManager, this.requestManager, FETCH_CHAPTER_LIST_QUERY, variables) as FETCH_CHAPTER_LIST_DATA
+            console.log("HERE")
+            console.log(data)
             chapters = data.fetchChapters.chapters
         }
 
-        let returnChapters: Chapter[] = []
-        chapters.forEach((chapter) => {
-            returnChapters.push(App.createChapter({
-                id: chapter.id.toString(),
-                name: chapter.name,
-                chapNum: chapter.chapterNumber,
-                time: new Date(+(chapter.uploadDate)),
-                sortingIndex: chapter.sourceOrder
-            }))
-        })
-
-        return returnChapters;
+        return chapters.map((chapter) => App.createChapter({
+            id: chapter.id.toString(),
+            name: chapter.name,
+            chapNum: chapter.chapterNumber,
+            time: new Date(+(chapter.uploadDate)),
+            sortingIndex: chapter.sourceOrder
+        }))
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
@@ -201,6 +206,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
         data.fetchChapterPages.pages.forEach((page) => {
             pages.push(this.serverAddress + page)
         })
+
         return App.createChapterDetails({
             id: chapterId,
             mangaId,
@@ -235,7 +241,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
         this.serverAddress = serverURL;
 
         const mangaPerRow = await States.MANGA_PER_SECTION.get(this.stateManager);
-        const recentlyUpdatedDuplicates = await States.RECENTLY_UPDATED_DUPLICATES.get(this.stateManager);
+        // const recentlyUpdatedDuplicates = await States.RECENTLY_UPDATED_DUPLICATES.get(this.stateManager);
         const updatedRowState = await States.UPDATED_SECTION_STATE.get(this.stateManager);
         const categoryRowState = await States.CATEGORY_SECTION_STATE.get(this.stateManager);
         const sourceRowState = await States.SOURCE_SECTION_STATE.get(this.stateManager);
@@ -315,13 +321,13 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                         containsMoreItems: true,
                         type: sourceRowStyle
                     }),
-                    query: SOURCE_QUERY,
+                    query: SOURCE_SECTION_QUERY,
                     variables: {
                         page: 1,
                         source: source.id,
                         type: "POPULAR",
                         query: ""
-                    } as SOURCE_VARIABLES
+                    } as SOURCE_SECTION_VARIABLES
                 })
 
                 if (source.supportsLatest) {
@@ -332,13 +338,13 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                             containsMoreItems: true,
                             type: sourceRowStyle
                         }),
-                        query: SOURCE_QUERY,
+                        query: SOURCE_SECTION_QUERY,
                         variables: {
                             page: 1,
                             source: source.id,
                             type: "LATEST",
                             query: ""
-                        } as SOURCE_VARIABLES
+                        } as SOURCE_SECTION_VARIABLES
                     })
                 }
             })
@@ -378,8 +384,8 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                                     }))
                                 })
                                 break;
-                            case SOURCE_QUERY:
-                                data = response as SOURCE_DATA
+                            case SOURCE_SECTION_QUERY:
+                                data = response as SOURCE_SECTION_DATA
 
                                 const mangas = data.fetchSourceManga.mangas.slice(0, mangaPerRow)
 
@@ -408,7 +414,6 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
     // Rewrite, no metadata, metadata
     // We can make our metadata be an object of key source id value viewmoreitems source id metadata so we can pass it back
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        console.log("WAIT WHAT")
         const allResults: PartialSourceManga[][] = []
         const allMetadatas: any[] = []
         let results: PartialSourceManga[] = [];
@@ -434,7 +439,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
         else {
             results = allResults.flatMap((innerArray) => { return innerArray })
         }
-        console.log(JSON.stringify(allMetadatas))
+
         metadata = allMetadatas[0]!
         return App.createPagedResults({
             results,
@@ -443,9 +448,6 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        console.log("getViewMoreItems")
-        console.log(homepageSectionId)
-        console.log(JSON.stringify(metadata))
         const sourceId = homepageSectionId.split('-').pop() ?? ""
         const type = homepageSectionId.split("-")[0]
 
@@ -483,7 +485,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                 hasNextPage,
             })
         }
-        else if (type == "popular") {
+        else if (type == "popular" || type == "latest" || type == "search") {
             let page = metadata?.page ?? 1
             let length = metadata?.length ?? await States.MANGA_PER_SECTION.get(this.stateManager)
             let starting = metadata?.starting ?? 0;
@@ -496,39 +498,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                 length,
                 starting,
                 hasNextPage,
-                type: "POPULAR",
-            })
-        }
-        else if (type == "latest") {
-            let page = metadata?.page ?? 1
-            let length = metadata?.length ?? await States.MANGA_PER_SECTION.get(this.stateManager)
-            let starting = metadata?.starting ?? 0;
-            let query = metadata?.query ?? "";
-
-            pagedResults = await this.getViewMoreItemsSources(sourceId, {
-                serverUrl,
-                query,
-                page,
-                length,
-                starting,
-                hasNextPage,
-                type: "LATEST",
-            })
-        }
-        else if (type == "search") {
-            let page = metadata?.page ?? 1
-            let length = metadata?.length ?? await States.MANGA_PER_SECTION.get(this.stateManager)
-            let starting = metadata?.starting ?? 0;
-            let query = metadata?.query ?? "";
-
-            pagedResults = await this.getViewMoreItemsSources(sourceId, {
-                serverUrl,
-                query,
-                page,
-                length,
-                starting,
-                hasNextPage,
-                type: "SEARCH",
+                type: type.toLocaleUpperCase(),
             })
         }
         else {
@@ -614,9 +584,9 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
             source: sourceId,
             type: metadata.type,
             query: metadata.query,
-        } as SOURCE_VARIABLES
+        } as SOURCE_SECTION_VARIABLES
 
-        const response = await (queryGraphQL(this.stateManager, this.requestManager, SOURCE_QUERY, variables)) as SOURCE_DATA
+        const response = await (queryGraphQL(this.stateManager, this.requestManager, SOURCE_SECTION_QUERY, variables)) as SOURCE_SECTION_DATA
 
         let mangas = response.fetchSourceManga.mangas
 
@@ -647,7 +617,7 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
         })
     }
 
-    async getViewMoreItemsManga(metadata: MangaSearchMetadata): Promise<PagedResults> {
+    async getViewMoreItemsManga(metadata: MANGA_SEARCH_METADATA): Promise<PagedResults> {
         const results: PartialSourceManga[] = []
 
         const variables = {
@@ -677,8 +647,6 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
     }
 
     async getMangaProgress(mangaId: string): Promise<MangaProgress | undefined> {
-        console.log("GET MANGA PROGRESS???")
-
         return Promise.resolve(undefined)
     }
 
@@ -695,13 +663,8 @@ export class Suwayomi implements PaperbackExtensionBase, MangaProgressProviding 
                 await actionQueue.discardChapterReadAction(readAction)
             }
             catch (error) {
-                console.log(error)
                 await actionQueue.retryChapterReadAction(readAction)
             }
         }
     }
 }
-
-
-
-

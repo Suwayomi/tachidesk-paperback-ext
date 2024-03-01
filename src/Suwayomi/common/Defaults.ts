@@ -1,17 +1,39 @@
 import {
+    HomeSection
+} from "@paperback/types";
+
+import {
     Category, Sources
 } from "./Queries";
 
+// Interface used by getHomePageSections
+export interface HomepageSectionDetails {
+    section: HomeSection,
+    query: string,
+    variables?: {}
+}
+
+// Default manga in case of server error
+export const serverUnavailableMangaTiles = () => {
+    return [
+        App.createPartialSourceManga({
+            title: "Server",
+            image: "",
+            mangaId: "placeholder-id",
+            subtitle: "Unavailable"
+        })
+    ]
+}
+
+// TODO: Move to States
 export const DEFAULT_SERVER_CATEGORY: Category = {
     id: 0,
     order: 0,
     name: "Default"
 }
 export const DEFAULT_SERVER_CATEGORIES: Category[] = [DEFAULT_SERVER_CATEGORY];
-
 export const DEFAULT_SERVER_SOURCE: Sources = {
     id: "0",
-    name: "Local source",
     displayName: "Local source",
     lang: "localsourcelang",
     supportsLatest: true
