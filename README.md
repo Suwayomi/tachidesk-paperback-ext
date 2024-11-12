@@ -7,6 +7,9 @@
 This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi extensions on iOS!
 [Tachidesk](https://github.com/Suwayomi/Tachidesk-Server) is a rewrite of [Tachiyomi](https://tachiyomi.org/) for the Desktop, this extensions queries a  Tachidesk instance to retrieve content.
 
+## Notice
+<b>Since iOS 18, Suwayomi-Server MUST be served through HTTPS.</b>
+
 ## Setup
 -   Setup a Tachidesk server by following this [guide](https://github.com/Suwayomi/Tachidesk-Server#downloading-and-running-the-app).
 - Make sure the instance is available through the browser by connecting to the server ip:port (usually runs on port 4567)
