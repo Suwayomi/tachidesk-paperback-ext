@@ -53,12 +53,7 @@ export const DEFAULT_SERVER_CATEGORY: tachiCategory = {
     name: "Default",
     default: true,
     size: 0,
-    includeInUpdate: "EXCLUDE",
-    meta: {
-        "additionalProp1": "string",
-        "additionalProp2": "string",
-        "additionalProp3": "string"
-    }
+    includeInUpdate: "EXCLUDE"
 }
 export const DEFAULT_SERVER_CATEGORIES: Record<string, tachiCategory> = { "0": DEFAULT_SERVER_CATEGORY };
 export const DEFAULT_SELECTED_CATEGORIES = ["0"];
@@ -140,8 +135,7 @@ export interface tachiCategory {
     name: string,
     default: boolean,
     size: number,
-    includeInUpdate: string,
-    meta: any
+    includeInUpdate: string
 }
 
 export interface tachiSources {
@@ -171,7 +165,6 @@ export interface tachiManga {
     "inLibrary": boolean,
     "inLibraryAt": number,
     "source": tachiSources,
-    "meta": any,
     "realUrl": string,
     "lastFetchedAt": number,
     "chaptersLastFetchedAt": number,
@@ -203,8 +196,7 @@ export interface tachiChapter {
     "realUrl": string,
     "downloaded": boolean,
     "pageCount": number,
-    "chapterCount": number,
-    "meta": any
+    "chapterCount": number
 }
 
 // ! Query Interfaces End
